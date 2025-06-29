@@ -9,7 +9,7 @@ export default function Footer() {
         { href: "/privacy", label: "Privacy Policy" },
     ];
   return (
-    <footer className="w-full border-t bg-background py-8 mt-16">
+    <footer className="w-full border-t bg-background py-8 mt-16 ">
       <div className="w-[80%] mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
         <div className="text-center md:text-left">
           <span className="text-xl font-bold text-primary">Gurukul</span>
