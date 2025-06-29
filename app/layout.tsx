@@ -2,7 +2,7 @@ import "@/app/globals.css";
 import type { Metadata } from 'next'
 
 import { ThemeProvider } from "@/components/theme-provider"
-import { Navbar } from "./_component/Navbar"
+import { Toaster } from "@/components/ui/sonner";
 
 export const metadata: Metadata = {
   title: 'Gurukul',
@@ -21,9 +21,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
             enableSystem
             disableTransitionOnChange
           >
-            <Navbar/>
             {children}
           </ThemeProvider>
+          <Toaster/>
         </body>
       </html>
     </>
