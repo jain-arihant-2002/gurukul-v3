@@ -3,7 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "studio": "pnpm drizzle-kit studio --port 3001 --verbose",
     "server": "nodemon --exec \"lt --subdomain gurukul --port 3000\" --delay 2",
+    "dev:db": "docker-compose -f db/localPostgres.yaml up",
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
@@ -12,6 +14,8 @@
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
     "@neondatabase/serverless": "^1.0.1",
+    "@radix-ui/react-accordion": "^1.2.11",
+    "@radix-ui/react-avatar": "^1.1.10",
     "@radix-ui/react-checkbox": "^1.3.2",
     "@radix-ui/react-dialog": "^1.1.14",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
@@ -37,11 +41,14 @@
     "zod": "^3.25.67"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@tailwindcss/postcss": "^4",
+    "@tailwindcss/typography": "^0.5.16",
     "@types/node": "^20",
     "@types/pg": "^8.15.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.0",
     "drizzle-kit": "^0.31.4",
     "nodemon": "^3.1.10",
     "tailwindcss": "^4",

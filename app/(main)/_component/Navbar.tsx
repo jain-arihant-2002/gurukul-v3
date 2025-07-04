@@ -22,10 +22,11 @@ export function Navbar() {
     };
 
     const links = [
-        { href: "/courses", label: "Courses" },
-        { href: "/instructors", label: "Instructors" },
+        { href: "/courses/page/1", label: "Courses" },
+        { href: "/instructors/page/1", label: "Instructors" },
         { href: "/about", label: "About" },
-        { href: "/contact", label: "Contact" },
+        { href: "/contact", label: "Contact Us" },
+        { href: "/Teacher", label: "Teach on Gurukul" },
     ];
 
     // --- Components ---

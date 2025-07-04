@@ -5,7 +5,7 @@ export default function Footer() {
         { href: "/", label: "Home" },
         { href: "/about", label: "About" },
         { href: "/course", label: "Courses" },
-        { href: "/contact", label: "Contact" },
+        { href: "/contact", label: "Contact Us" },
         { href: "/privacy", label: "Privacy Policy" },
     ];
   return (

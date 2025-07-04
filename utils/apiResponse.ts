@@ -1,4 +1,4 @@
-import { ApiResponseType } from "@/lib/types"
+import { ApiResponseType } from "@/utils/types"
 
 /**
  * Creates a standardized API response object
@@ -18,7 +18,8 @@ export function ApiResponse<T = null>(
             success: true,
             data,
             code,
-            message: message || 'Request successful'
+            message: message || 'Request successful',
+            error: null
         }
     }
 
@@ -28,7 +29,8 @@ export function ApiResponse<T = null>(
             success: true,
             data,
             code,
-            message: message || 'Redirection'
+            message: message || 'Redirection',
+            error: null
         }
     }
 

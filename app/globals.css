@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -172,4 +173,19 @@ body {
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ...existing code... */
+
+.prose table {
+  @apply w-full border-collapse my-4;
+}
+.prose th, .prose td {
+  @apply border px-4 py-2;
+}
+.prose th {
+  @apply bg-muted text-foreground font-semibold;
+}
+.prose tr:nth-child(even) td {
+  @apply bg-muted/50;
 }

@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#local postgres db
+db/localPostgres.yaml
+db/data
+db/init
+db/README.md
