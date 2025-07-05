@@ -4,6 +4,7 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { env } from "@/utils/env";
 import { db } from "@/db/db";
 import * as schema from "@/db/schema";
+import { nextCookies } from "better-auth/next-js";
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, {
@@ -26,6 +27,7 @@ export const auth = betterAuth({
                     email: profile.email,
                     image: profile.picture,
                     username: profile.email.split('@')[0], // Use email prefix as username
+                    displayUsername: profile.name || profile.email.split('@')[0], // Use name or email prefix for display
                 };
             }
         },
@@ -38,12 +40,15 @@ export const auth = betterAuth({
                     email: profile.email,
                     image: profile.avatar_url,
                     username: profile.login, // Use GitHub login as username
+                    displayUsername: profile.name || profile.email.split('@')[0], // Use name or email prefix for display
+
                 };
             }
         }
     },
     plugins: [
         username(),
-        admin()
+        admin(),
+        nextCookies(),
     ]
 });

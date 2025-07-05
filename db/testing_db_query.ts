@@ -1,176 +1,243 @@
-import { db } from "@/db/db";
-import * as schema from "@/db/schema";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { eq } from "drizzle-orm"; // <-- IMPORT THE `eq` OPERATOR
+import { Pool } from "pg";
+import * as schema from "./schema";
 import { faker } from "@faker-js/faker";
-import { like } from "drizzle-orm";
+// Correctly import your application types for type-safe data generation
+import { LectureType, type QuizQuestion, type SocialLink } from "../utils/types"; // <-- IMPORT THE ENUM
 
-// =================================================================
 // --- CONFIGURATION ---
+const NUM_USERS = 60;
+const NUM_INSTRUCTORS = 35; // Must be <= NUM_USERS
+const COURSES_PER_INSTRUCTOR = 3;
+const SECTIONS_PER_COURSE = 5;
+const LECTURES_PER_SECTION = 7;
+
+// --- DATABASE CONNECTION ---
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL environment variable is not set.");
+}
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const db = drizzle(pool, { schema });
+
+// --- HELPER FUNCTIONS ---
+
+const createRandomSocialLinks = (): SocialLink[] => {
+  const platforms: SocialLink["platform"][] = ["github", "linkedin", "twitter", "website"];
+  const selectedPlatforms = faker.helpers.arrayElements(platforms, faker.number.int({ min: 2, max: 4 }));
+  
+  return selectedPlatforms.map(platform => ({
+    platform,
+    url: platform === 'github' ? `https://github.com/${faker.internet.userName()}`
+        : platform === 'linkedin' ? `https://linkedin.com/in/${faker.internet.userName()}`
+        : platform === 'twitter' ? `https://twitter.com/${faker.internet.userName()}`
+        : faker.internet.url(),
+  }));
+};
+
+const createRandomQuizQuestions = (count: number): QuizQuestion[] => {
+  return Array.from({ length: count }, (_, i) => ({
+    id: `question_${i + 1}_${faker.string.uuid()}`,
+    questionText: faker.lorem.sentence({ min: 5, max: 10 }).replace(/\.$/, "?"),
+    options: Array.from({ length: 4 }, () => faker.lorem.words(faker.number.int({ min: 2, max: 4 }))),
+    correctOptionIndex: faker.number.int({ min: 0, max: 3 }),
+  }));
+};
+
 // =================================================================
-const NUM_USERS = 15;
-const NUM_INSTRUCTORS = 10; // Must be <= NUM_USERS
-const NUM_COURSES_PER_INSTRUCTOR = 2;
-const NUM_SECTIONS_PER_COURSE = 3;
-const NUM_LECTURES_PER_SECTION = 4;
+// --- CLEANUP FUNCTION ---
+// =================================================================
+export const cleanupData = async () => {
+  console.log("🧹 Cleaning up old data...");
+  try {
+    await db.delete(schema.enrollments);
+    await db.delete(schema.quizzes);
+    await db.delete(schema.lectures);
+    await db.delete(schema.sections);
+    await db.delete(schema.courses);
+    await db.delete(schema.instructors);
+    await db.delete(schema.session);
+    await db.delete(schema.account);
+    await db.delete(schema.verification);
+    await db.delete(schema.user);
+    console.log("✅ Cleanup complete.");
+  } catch (error) {
+    console.error("❌ Error during cleanup:", error);
+    throw error;
+  }
+};
 
-const userRoles = Object.values(schema.userRoleEnum.enumValues);
-const courseLevels = Object.values(schema.courseLevelEnum.enumValues);
-const courseStatuses = Object.values(schema.courseStatusEnum.enumValues);
-const lectureTypes = Object.values(schema.lectureTypeEnum.enumValues);
+// =================================================================
+// --- SEEDING FUNCTIONS ---
+// =================================================================
+export const seedDatabaseWithAllFields = async () => {
+  console.log("🌱 Seeding database with all fields...");
 
-/**
- * The main seeding function.
- */
-export async function seedDatabase() {
-    console.log("🔥 Starting database seeding process...");
+  // 1. Create Users & Instructors
+  console.log("   - Seeding users and instructors...");
+  const createdUserIds: string[] = [];
+  const createdInstructorIds: string[] = [];
 
-    // Use a transaction to ensure all or nothing is inserted
-    await db.transaction(async (tx) => {
-        console.log("✅ Creating god_users and god_instructors...");
+  for (let i = 0; i < NUM_USERS; i++) {
+    const firstName = faker.person.firstName();
+    const lastName = faker.person.lastName();
+    const isInstructor = i < NUM_INSTRUCTORS;
+    const [newUser] = await db.insert(schema.user).values({
+        id: faker.string.uuid(),
+        name: `${firstName} ${lastName}`,
+        email: faker.internet.email({ firstName, lastName }).toLowerCase(),
+        username: faker.internet.userName({ firstName, lastName }).toLowerCase() + faker.string.alphanumeric(3),
+        displayUsername: `${firstName} ${lastName}`,
+        image: faker.image.avatar(),
+        role: isInstructor ? "instructor" : "user",
+      }).returning();
+    createdUserIds.push(newUser.id);
+    if (isInstructor) {
+      await db.insert(schema.instructors).values({
+          id: newUser.id,
+          headline: faker.person.jobTitle(),
+          bio: faker.lorem.paragraph(),
+          expertise: faker.helpers.arrayElements(["React", "Node.js", "TypeScript", "SQL", "DevOps"], { min: 2, max: 4 }),
+          socialLinks: createRandomSocialLinks(),
+        });
+      createdInstructorIds.push(newUser.id);
+    }
+  }
 
-        const createdUserIds: string[] = [];
-        const createdInstructorIds: string[] = [];
+  // 2. Create Courses, Sections, Lectures, and Quizzes
+  console.log("   - Seeding courses, sections, and content...");
+  const createdCourseIds: string[] = [];
+  const allLectureIdsByCourse: Record<string, string[]> = {};
 
-        // --- Create Users & Instructors ---
-        for (let i = 0; i < NUM_USERS; i++) {
-            const userId = `god_user_${i + 1}`;
-            const username = `god_username_${i + 1}`;
-            const isInstructor = i < NUM_INSTRUCTORS;
+  for (const instructorId of createdInstructorIds) {
+    let instructorCoursesCount = 0;
+    for (let i = 0; i < COURSES_PER_INSTRUCTOR; i++) {
+      instructorCoursesCount++;
+      const courseTitle = faker.company.catchPhrase();
+      const [newCourse] = await db.insert(schema.courses).values({
+          id: faker.string.uuid(),
+          slug: faker.helpers.slugify(courseTitle).toLowerCase(),
+          title: courseTitle,
+          shortDescription: faker.lorem.sentence(),
+          longDescriptionHtml: `<p>${faker.lorem.paragraphs({ min: 3, max: 5 }).replace(/\n/g, "</p><p>")}</p>`,
+          coverImageUrl: faker.image.urlLoremFlickr({ category: 'technology' }),
+          // --- FIX 1: `precision` -> `fractionDigits` ---
+          rating: faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 }).toString(),
+          price: faker.helpers.arrayElement(["0.00", "19.99", "49.99", "99.99"]),
+          level: faker.helpers.arrayElement(["beginner", "intermediate", "advanced", "all-levels"]),
+          status: "published",
+          categories: faker.helpers.arrayElements(["Web Dev", "Data Science", "Design", "Marketing"], { min: 1, max: 2 }),
+          whatWillYouLearn: Array.from({ length: faker.number.int({ min: 4, max: 7 }) }, () => faker.lorem.sentence()),
+          prerequisites: Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, () => faker.lorem.sentence()),
+          authorId: instructorId,
+        }).returning();
 
-            // Insert User
-            await tx.insert(schema.user).values({
-                id: userId,
-                name: `God User ${i + 1}`,
-                email: `god_user_${i + 1}@example.com`,
-                username: username,
-                displayUsername: `God User ${i + 1}`,
-                role: isInstructor ? "instructor" : "user",
-                emailVerified: true,
-                image: faker.image.avatar(),
+      createdCourseIds.push(newCourse.id);
+      allLectureIdsByCourse[newCourse.id] = [];
+
+      let totalDurationSeconds = 0;
+      for (let j = 0; j < SECTIONS_PER_COURSE; j++) {
+        const [newSection] = await db.insert(schema.sections).values({
+          id: faker.string.uuid(),
+          title: `Section ${j + 1}: ${faker.lorem.words(3)}`,
+          description: faker.lorem.sentence(),
+          order: j + 1,
+          courseId: newCourse.id,
+        }).returning();
+
+        for (let k = 0; k < LECTURES_PER_SECTION; k++) {
+          // --- FIX 2: Use the imported enum, not strings ---
+          const lectureType = faker.helpers.arrayElement([LectureType.VIDEO, LectureType.ARTICLE, LectureType.QUIZ]);
+          const duration = lectureType === LectureType.VIDEO ? faker.number.int({ min: 120, max: 900 }) : 0;
+          totalDurationSeconds += duration;
+          
+          const [newLecture] = await db.insert(schema.lectures).values({
+              id: faker.string.uuid(),
+              title: `Lecture ${k + 1}: ${faker.lorem.words(4)}`,
+              order: k + 1,
+              type: lectureType,
+              isFreePreview: k < 2,
+              durationInSeconds: duration,
+              videoUrl: lectureType === LectureType.VIDEO ? `https://fake-cdn.com/videos/${faker.string.uuid()}.mp4` : undefined,
+              articleContentHtml: lectureType === LectureType.ARTICLE ? `<p>${faker.lorem.paragraphs({ min: 4, max: 8 }).replace(/\n/g, "</p><p>")}</p>` : undefined,
+              sectionId: newSection.id,
+            }).returning();
+          
+          allLectureIdsByCourse[newCourse.id].push(newLecture.id);
+
+          if (lectureType === LectureType.QUIZ) {
+            await db.insert(schema.quizzes).values({
+              id: faker.string.uuid(),
+              description: faker.lorem.sentence(),
+              questions: createRandomQuizQuestions(faker.number.int({ min: 3, max: 5 })),
+              lectureId: newLecture.id,
             });
-            createdUserIds.push(userId);
-
-            // If user is an instructor, create instructor profile
-            if (isInstructor) {
-                await tx.insert(schema.instructors).values({
-                    id: userId, // ID must match the user's ID
-                    headline: "Expert in Divine Web Technologies",
-                    bio: faker.lorem.paragraph(),
-                    expertise: ["Theology", "TypeScript", "Miracles", "Drizzle ORM"],
-                    socialLinks: [{ platform: "github", url: `https://github.com/${username}` }],
-                });
-                createdInstructorIds.push(userId);
-            }
+          }
         }
+      }
+      // --- FIX 3: Use eq() for the where clause ---
+      await db.update(schema.courses).set({ totalDurationSeconds }).where(eq(schema.courses.id, newCourse.id));
+    }
+    // --- FIX 3: Use eq() for the where clause ---
+    await db.update(schema.instructors).set({ coursesCount: instructorCoursesCount }).where(eq(schema.instructors.id, instructorId));
+  }
 
-        console.log(`✅ Created ${NUM_USERS} users and ${NUM_INSTRUCTORS} instructors.`);
+  // 3. Create Enrollments and update course counts
+  console.log("   - Seeding enrollments...");
+  for (const userId of createdUserIds) {
+    const coursesToEnroll = faker.helpers.arrayElements(createdCourseIds, { min: 1, max: 4 });
+    for (const courseId of coursesToEnroll) {
+      const lectureIdsForCourse = allLectureIdsByCourse[courseId];
+      const completedLectures = faker.helpers.arrayElements(lectureIdsForCourse, { min: 0, max: lectureIdsForCourse.length });
+      await db.insert(schema.enrollments).values({
+          id: faker.string.uuid(),
+          userId,
+          courseId,
+          progressPercentage: lectureIdsForCourse.length > 0 ? Math.round((completedLectures.length / lectureIdsForCourse.length) * 100) : 0,
+          completedLectureIds: completedLectures,
+      });
+    }
+  }
+  const enrollmentsByCourse = await db.select({ courseId: schema.enrollments.courseId }).from(schema.enrollments);
+  const counts: Record<string, number> = {};
+  enrollmentsByCourse.forEach(e => { counts[e.courseId] = (counts[e.courseId] || 0) + 1; });
+  for (const courseId in counts) {
+    // --- FIX 3: Use eq() for the where clause ---
+    await db.update(schema.courses).set({ enrollmentCount: counts[courseId] }).where(eq(schema.courses.id, courseId));
+  }
+  console.log("✅ Seeding with all fields complete.");
+};
 
-        // --- Create Courses, Sections, Lectures, and Quizzes ---
-        const createdCourseIds: string[] = [];
-
-        console.log("✅ Creating god_courses with all related content...");
-        for (const instructorId of createdInstructorIds) {
-            for (let i = 0; i < NUM_COURSES_PER_INSTRUCTOR; i++) {
-                const courseId = `god_course_${instructorId}_${i + 1}`;
-                const courseSlug = `god-course-${instructorId}-${i + 1}`;
-
-                // Insert Course
-                const [newCourse] = await tx.insert(schema.courses).values({
-                    id: courseId,
-                    slug: courseSlug,
-                    title: `God Course: The Art of Seeding ${i + 1}`,
-                    shortDescription: faker.lorem.sentence(),
-                    longDescriptionHtml: `<h1>About this God Course</h1><p>${faker.lorem.paragraphs(3)}</p>`,
-                    authorId: instructorId,
-                    level: courseLevels[i % courseLevels.length],
-                    status: "published",
-                    price: faker.commerce.price({ min: 10, max: 200 }),
-                    rating: (Math.random() * (5 - 3.5) + 3.5).toFixed(1),
-                    categories: ["Testing", "Databases", "Drizzle"],
-                    whatWillYouLearn: ["How to seed", "How to test", "How to query"],
-                    prerequisites: ["A working computer"],
-                }).returning();
-                createdCourseIds.push(newCourse.id);
-
-                // --- Create Sections for this Course ---
-                for (let j = 0; j < NUM_SECTIONS_PER_COURSE; j++) {
-                    const sectionId = `${courseId}_section_${j + 1}`;
-                    await tx.insert(schema.sections).values({
-                        id: sectionId,
-                        title: `God Section ${j + 1}: The Beginning`,
-                        order: j + 1,
-                        courseId: newCourse.id,
-                    });
-
-                    // --- Create Lectures for this Section ---
-                    for (let k = 0; k < NUM_LECTURES_PER_SECTION; k++) {
-                        const lectureId = `${sectionId}_lecture_${k + 1}`;
-                        const lectureType = lectureTypes[k % lectureTypes.length];
-
-                        await tx.insert(schema.lectures).values({
-                            id: lectureId,
-                            title: `God Lecture ${k + 1}: ${lectureType}`,
-                            order: k + 1,
-                            type: lectureType,
-                            sectionId: sectionId,
-                            isFreePreview: k < 1, // Make the first lecture a free preview
-                            videoUrl: lectureType === "video" ? faker.internet.url() : undefined,
-                            articleContentHtml: lectureType === "article" ? `<p>This is a holy article.</p>` : undefined,
-                        });
-
-                        // --- Create Quiz if lecture type is quiz ---
-                        if (lectureType === "quiz") {
-                            await tx.insert(schema.quizzes).values({
-                                id: `god_quiz_${lectureId}`,
-                                description: "A divine test of your knowledge.",
-                                lectureId: lectureId,
-                                questions: [{
-                                    id: "q1",
-                                    questionText: "Is this a god query?",
-                                    options: ["Yes", "No", "Maybe"],
-                                    correctOptionIndex: 0,
-                                }],
-                            });
-                        }
-                    }
-                }
-            }
-        }
-        console.log(`✅ Created a total of ${createdCourseIds.length} courses with content.`);
-
-        // --- Create Enrollments ---
-        console.log("✅ Creating god_enrollments...");
-        const enrollmentData = createdUserIds.flatMap(userId =>
-            // Enroll each user in 1 or 2 of the created courses
-            createdCourseIds.slice(0, 2).map(courseId => ({
-                id: `god_enrollment_${userId}_${courseId}`,
-                userId,
-                courseId,
-                progressPercentage: Math.floor(Math.random() * 100),
-            }))
-        );
-
-        await tx.insert(schema.enrollments).values(enrollmentData);
-        console.log(`✅ Enrolled users in ${enrollmentData.length} courses.`);
-
-    });
-
-    console.log("🎉 Database seeding completed successfully!");
-}
-
-/**
- * Deletes all data created by the seeder.
- */
-export async function cleanupGodData() {
-    console.log("🧹 Starting cleanup of all 'god_' data...");
-    await db.transaction(async (tx) => {
-        console.log("🗑️ Deleting god_courses and their cascaded content...");
-        // Deleting courses first due to the 'restrict' foreign key on authorId
-        await tx.delete(schema.courses).where(like(schema.courses.slug, 'god_%'));
-
-        console.log("🗑️ Deleting god_users and their cascaded profiles...");
-        // This will cascade to instructors, enrollments, sessions, etc.
-        await tx.delete(schema.user).where(like(schema.user.username, 'god_%'));
-    });
-    console.log("✨ Cleanup complete.");
-}
-
+export const seedDatabaseWithOnlyRequiredFields = async () => {
+    console.log("🌱 Seeding database with only required fields...");
+  
+    // 1. Create Users & Instructors (minimal)
+    const createdInstructorIds: string[] = [];
+    for (let i = 0; i < NUM_INSTRUCTORS; i++) {
+        const [newUser] = await db.insert(schema.user).values({
+            id: faker.string.uuid(), name: faker.person.fullName(), email: faker.internet.email().toLowerCase(), username: faker.internet.userName().toLowerCase() + faker.string.alphanumeric(3), displayUsername: faker.person.fullName(), role: "instructor",
+        }).returning();
+        const [newInstructor] = await db.insert(schema.instructors).values({
+            id: newUser.id, headline: "Instructor", bio: "An instructor bio.",
+        }).returning();
+        createdInstructorIds.push(newInstructor.id);
+    }
+  
+    // 2. Create Courses, Sections, Lectures (minimal)
+    for (const instructorId of createdInstructorIds) {
+        const courseTitle = "A Basic Course";
+        const [newCourse] = await db.insert(schema.courses).values({
+            id: faker.string.uuid(), slug: faker.helpers.slugify(courseTitle).toLowerCase(), title: courseTitle, shortDescription: "A short description.", longDescriptionHtml: "<p>A long description.</p>", authorId: instructorId,
+        }).returning();
+        const [newSection] = await db.insert(schema.sections).values({
+            id: faker.string.uuid(), title: "A Basic Section", order: 1, courseId: newCourse.id,
+        }).returning();
+        await db.insert(schema.lectures).values({
+            id: faker.string.uuid(), title: "A Basic Lecture", order: 1, 
+            // --- FIX 2: Use the imported enum, not a string ---
+            type: LectureType.VIDEO, 
+            sectionId: newSection.id,
+        });
+    }
+    console.log("✅ Seeding with required fields complete.");
+};

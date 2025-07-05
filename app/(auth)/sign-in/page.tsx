@@ -123,7 +123,7 @@ export default function SignIn() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <div className="flex items-center">
+                    {/* <div className="flex items-center">
                       <FormLabel>Password</FormLabel>
                       <Link
                         href="/forgot-password"
@@ -132,6 +132,7 @@ export default function SignIn() {
                         Forgot your password?
                       </Link>
                     </div>
+                    Todo integrate email to use this */}
                     <FormControl>
                       <Input
                         type="password"

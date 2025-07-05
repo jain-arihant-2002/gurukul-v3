@@ -151,7 +151,8 @@ export type CourseCard = {
   authorName: string;
   updatedAt: string; // ISO string
   createdAt: string; // ISO string
-  enrollmentCount:number
+  enrollmentCount: number;
+  shortDescription: string;
 };
 
 /**
@@ -174,15 +175,24 @@ export type InstructorCard = {
 export type CourseDetails = {
   // Course fields
   id: string;
+  authorId: string
   slug: string;
   title: string;
   shortDescription: string;
   longDescriptionHtml: string;
   coverImageUrl: string | null;
+  rating: number;
+  enrollmentCount: number;
   categories: string[];
   price: number;
+  level: CourseLevel;
+  language: string;
+  status: CourseStatus;
   whatWillYouLearn: string[];
+  prerequisites: string[];
   totalDurationSeconds: number;
+  createdAt: string;
+  updatedAt: string;
   // Simplified author fields
   authorName: string;
   authorUsername: string;

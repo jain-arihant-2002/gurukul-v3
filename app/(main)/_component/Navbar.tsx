@@ -7,11 +7,13 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
+import UserDropDown from "@/components/user-dropdown";
 
 export function Navbar() {
     const { data: session } = authClient.useSession();
 
     const logOut = async () => {
+        console.log("Logging out...");
         await authClient.signOut({
             fetchOptions: {
                 onSuccess: () => {
@@ -21,6 +23,7 @@ export function Navbar() {
         });
     };
 
+    // --- Navbar Links ---
     const links = [
         { href: "/courses/page/1", label: "Courses" },
         { href: "/instructors/page/1", label: "Instructors" },
@@ -144,13 +147,14 @@ export function Navbar() {
                 </Button>
             </Link>
         ) : (
-            <Button
-                variant="destructive"
-                onClick={logOut}
-                className={buttonVariants({ className: "hidden lg:block" })}
-            >
-                Log Out
-            </Button>
+            <UserDropDown avatarSrc={session.user.image || '/default-avatar.png'} avatarAlt={session.user.name.charAt(0)} fullname={session.user.name} email={session.user.email} onLogout={logOut} />
+            // <Button
+            //     variant="destructive"
+            //     onClick={logOut}
+            //     className={buttonVariants({ className: "hidden lg:block" })}
+            // >
+            //     Log Out
+            // </Button>
         );
     }
 
@@ -203,21 +207,12 @@ export function Navbar() {
                         ))}
                     </ul>
                     <div className="absolute bottom-0 left-0 w-full">
-                        {!session ? <Link
+                        {!session && <Link
                             href="/sign-in"
                             className="block w-full bg-primary text-white text-center py-3 border-none rounded-none hover:bg-accent hover:text-accent-foreground transition"
                         >
                             Sign-in
-                        </Link> : <Button
-                            variant='destructive'
-                            onClick={() => {
-                                logOut();
-                                toggleMenu();
-                            }}
-                            className="block w-full bg-primary text-white text-center py-3 border-none rounded-none hover:bg-accent hover:text-accent-foreground transition"
-                        >
-                            Log Out
-                        </Button>
+                        </Link>
                         }
                     </div>
                 </nav >

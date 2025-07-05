@@ -28,6 +28,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, X } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { convertImageToBase64 } from "@/utils/helperFunctions";
 
 // Zod schema for validation, including password confirmation
 const formSchema = z
@@ -98,14 +99,7 @@ const fieldConfigs = [
 ];
 
 // Utility to convert image to base64
-async function convertImageToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
-    });
-}
+
 
 export default function SignUp() {
     const router = useRouter();

@@ -19,7 +19,8 @@ export const getPublishedCourseCardFromDb = cache(async (options: { limit?: numb
         authorName: user.name,
         updatedAt: courses.updatedAt,
         createdAt: courses.createdAt,
-        enrollmentCount: courses.enrollmentCount
+        enrollmentCount: courses.enrollmentCount,
+        shortDescription: courses.shortDescription,
     }).from(courses)
         .innerJoin(instructors, eq(courses.authorId, instructors.id))
         .innerJoin(user, eq(instructors.id, user.id))
@@ -123,14 +124,14 @@ export const getTotalInstructorsCountFromDb = cache(async () => {
 });
 
 
-export const getCourseBySlugFromDb = cache(async (slug: string): Promise<CourseDetails | null> => {
+export const getCourseBySlugFromDb = cache(async (slug: string, status?: string): Promise<CourseDetails | null> => {
+    const whereClause = status
+        ? and(eq(courses.slug, slug), eq(courses.status, status as "draft" | "published" | "archived"))
+        : eq(courses.slug, slug);
 
     const courseData = await tryCatch(
         db.query.courses.findFirst({
-            where: and(
-                eq(courses.slug, slug),
-                eq(courses.status, "published"),
-            ),
+            where: whereClause,
             with: {
                 author: {
                     with: {
@@ -138,6 +139,7 @@ export const getCourseBySlugFromDb = cache(async (slug: string): Promise<CourseD
                             columns: {
                                 name: true,
                                 username: true,
+                                id: true,
                             }
                         },
                     }
@@ -157,13 +159,14 @@ export const getCourseBySlugFromDb = cache(async (slug: string): Promise<CourseD
         }
         )
     )
-    if (courseData.error) console.log("Error in getCourseBySlugFromDb:", courseData.error);
+    if (courseData.error) console.error("Error in getCourseBySlugFromDb:", courseData.error);
     if (!courseData.data || courseData.error) return null;
 
     // Remove author object and add authorName property
     const { author, ...rest } = courseData.data;
-    const mod = {
+    const result = {
         ...rest,
+        authorId: author.user.id,
         authorName: author.user.name,
         authorUsername: author.user.username,
         price: Number(rest.price),
@@ -180,8 +183,7 @@ export const getCourseBySlugFromDb = cache(async (slug: string): Promise<CourseD
             })),
         })),
     } as CourseDetails;
-    console.log("Course Data:", mod);
-    return mod;
+    return result;
 });
 
 export const getInstructorByUsernameFromDb = cache(async (username: string): Promise<InstructorDetails | null> => {
@@ -209,7 +211,8 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
                                 level: true,
                                 updatedAt: true,
                                 createdAt: true,
-                                enrollmentCount: true
+                                enrollmentCount: true,
+                                shortDescription: true
 
                             }
                         }
@@ -243,6 +246,25 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
         updatedAt: profile.updatedAt instanceof Date ? profile.updatedAt.toISOString() : profile.updatedAt,
         createdAt: profile.createdAt instanceof Date ? profile.createdAt.toISOString() : profile.createdAt,
     }
-    console.log("Instructor Data:", result);
     return result;
 })
+
+// export const getUserDataFromDb = cache(async (username: string) => {
+//     const { data, error } = await tryCatch(
+//         db.query.user.findFirst({
+//             where: eq(user.username, username),
+//             columns: {
+//                 id: true,
+//                 username: true,
+//                 name: true,
+//                 image: true,
+//                 email: true,
+//                 role: true,
+//             }
+//         })
+//     )
+//     if (error) {
+//         console.error("Error in getUserDataFromDb:", error);
+//     }
+//     return data ?? null;
+// })

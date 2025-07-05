@@ -1,3 +1,8 @@
-export function parseTags(tagsString: string): string[] {
-  return tagsString.split(",").map((tag) => tag.trim()).filter(Boolean);
-}// will change this parse json as will store tags array as json in db
+export async function convertImageToBase64(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}

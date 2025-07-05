@@ -1,4 +1,4 @@
-import {  getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb,getInstructorByUsernameFromDb } from "@/lib/data/query"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb } from "@/lib/data/queries"
 import { cache } from "react";
 
 export const getCoursesCard = cache(async (options: { limit?: number, offset?: number }) => {
@@ -27,11 +27,16 @@ export const getInstructorsCount = cache(async () => {
     return await getTotalInstructorsCountFromDb()
 })
 
-export const getCourseBySlug = cache(async (slug: string) => {
-    const course = await getCourseBySlugFromDb(slug);
+export const getCourseBySlug = cache(async (slug: string,status?:string) => {
+    const course = await getCourseBySlugFromDb(slug,status);
     return course ? course : null;
 })
 
 export const getInstructorByUsername = cache(async (username: string) => {
     return await getInstructorByUsernameFromDb(username);
 })
+
+// export const getUserData = cache(async (username: string) => {
+//     const user = getUserDataFromDb(username)
+//     return user
+// })

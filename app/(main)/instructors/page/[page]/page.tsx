@@ -1,7 +1,7 @@
 import InstructorsList from '@/app/(main)/_component/InstructorList';
 import PaginationBar from "@/components/PaginationBar";
 import { getInstructorCard } from '@/lib/dal';
-import { getTotalInstructorsCountFromDb } from '@/lib/data/query';
+import { getTotalInstructorsCountFromDb } from '@/lib/data/queries';
 import { redirect } from 'next/navigation';
 
 const INSTRUCTORS_PER_PAGE = 16;
@@ -35,7 +35,7 @@ export default async function AllInstructorsPage({ params }: { params: Promise<{
                 <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
                     Browse our complete list of instructors and find your next mentor!
                 </p>
-                {totalInstructors ? <InstructorsList Instructors={Instructor} /> : <p >No instructor found</p>}
+                {Instructor.length > 0 ? <InstructorsList Instructors={Instructor} /> : <p >No instructor found</p>}
                 <PaginationBar page={page} totalPages={totalPages} baseHref="/instructors/page" />
             </div>
         </section>

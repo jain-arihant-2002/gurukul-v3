@@ -18,7 +18,7 @@ import type {
   LectureType,
   SocialLink,
   QuizQuestion,
-} from "../utils/types"; // Adjust the import path to your types file
+} from "../utils/types"; 
 
 // =================================================================
 // --- ENUM DEFINITIONS ---
