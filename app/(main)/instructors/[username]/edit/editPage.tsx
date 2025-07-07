@@ -11,22 +11,24 @@ export default function EditTeacherProfilePage({ initialData }: { initialData: P
   const [isSubmitting, setIsSubmitting] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: any): Promise<void> => {
     setIsSubmitting(true);
     try {
       const result = await updateInstructorProfileAction({ ...data, id: initialData.id });
 
       if (result?.error) {
-        return toast.error(result.message || "Failed to update instructor profile.");
-
+        toast.error(result.message || "Failed to update instructor profile.");
+        return;
       } else {
         toast.success("Instructor profile updated successfully!");
         // Redirect to the instructor's profile page
-        router.push(`/instructors/`);
+        router.push(`/instructors`);
+        return;
       }
     } catch (error) {
       toast.error("Failed to update instructor profile. Please try again.");
       console.error("Failed to update instructor profile:", error);
+      return;
     } finally {
       setIsSubmitting(false);
     }
