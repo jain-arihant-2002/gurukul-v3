@@ -44,7 +44,8 @@ export async function createCourseAction(formData: CourseFormData) {
         return ApiResponse(result.data, result.status, result.error)
     }
     revalidatePath("/courses", "layout");
-    if(result.data?.status === 'published') 
+    
+    if (result.data?.status === 'published')
         revalidatePath('/instructors', 'layout');
 
     return ApiResponses.created(result.data, "Course created successfully");
@@ -58,8 +59,8 @@ export async function updateCourseAction(formData: CourseFormData) {
     if (!user || (!isAdmin && !isInstructor))
         return ApiResponses.unauthorized("You must be logged in as an instructor or admin to create a course");
 
-console.log("=== UPDATE COURSE ACTION ===");
-console.log("Form Data:", formData); // Todo : remove this
+    console.log("=== UPDATE COURSE ACTION ===");
+    console.log("Form Data:", formData); // Todo : remove this
     if (!formData.id) {
         return ApiResponses.internalServerError("Something went wrong, course ID is missing");
     }

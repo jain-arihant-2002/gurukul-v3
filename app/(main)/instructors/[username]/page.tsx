@@ -5,6 +5,8 @@ import { Separator } from "@/components/ui/separator";
 import CourseCard from "@/components/CourseCard";
 import { getInstructorByUsername } from "@/lib/dal";
 import { Twitter, Linkedin, Github, Globe, Users, BookOpen, Calendar } from "lucide-react";
+import EditProfileBtn from "./_component/editProfileBtn";
+import Link from "next/link";
 
 export default async function InstructorDetailPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -26,11 +28,11 @@ export default async function InstructorDetailPage({ params }: { params: Promise
   }
 
   // Convert array of social links to a usable format
-  const socialLinks = Array.isArray(instructor.socialLinks) 
+  const socialLinks = Array.isArray(instructor.socialLinks)
     ? instructor.socialLinks.reduce((acc, link) => {
-        acc[link.platform] = link.url;
-        return acc;
-      }, {} as Record<string, string>)
+      acc[link.platform] = link.url;
+      return acc;
+    }, {} as Record<string, string>)
     : {};
 
   // Calculate total students across all courses
@@ -48,19 +50,19 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                   {/* Avatar and Basic Info */}
                   <div className="flex flex-col items-center text-center">
                     <Avatar className="w-32 h-32 mb-4 border-4 border-background shadow-lg">
-                      <AvatarImage src={instructor.avatarUrl || "/placeholder-avatar.png"} alt={instructor.name} />
+                      <AvatarImage src={instructor.avatarUrl || "/default-avatar.png"} alt={instructor.name} />
                       <AvatarFallback className="text-2xl font-bold">
                         {instructor.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
-                    
+
                     <h1 className="text-2xl font-bold mb-2">
                       {instructor.name}
                     </h1>
                     <p className="text-muted-foreground mb-3">
                       @{instructor.username}
                     </p>
-                    
+
                     {/* Headline */}
                     {instructor.headline && (
                       <p className="text-primary font-medium mb-4 text-lg">
@@ -68,29 +70,34 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                       </p>
                     )}
 
+                    {/* Edit Profile Button */}
+                    <Link href={`/instructors/${instructor.username}/edit`}>
+                      <EditProfileBtn username={instructor.username} />
+                    </Link>
+
                     {/* Social Links */}
-                    <div className="flex gap-3 mb-6">
+                    <div className="flex gap-3 mb-6 mt-4">
                       {socialLinks.twitter && (
                         <a href={socialLinks.twitter} target="_blank" rel="noopener noreferrer" aria-label="Twitter"
-                           className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 transition-colors">
+                          className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 transition-colors">
                           <Twitter className="w-5 h-5 text-blue-500" />
                         </a>
                       )}
                       {socialLinks.linkedin && (
                         <a href={socialLinks.linkedin} target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"
-                           className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 transition-colors">
+                          className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950 dark:hover:bg-blue-900 transition-colors">
                           <Linkedin className="w-5 h-5 text-blue-700 dark:text-blue-400" />
                         </a>
                       )}
                       {socialLinks.github && (
                         <a href={socialLinks.github} target="_blank" rel="noopener noreferrer" aria-label="GitHub"
-                           className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-muted hover:bg-muted/80 transition-colors">
+                          className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-muted hover:bg-muted/80 transition-colors">
                           <Github className="w-5 h-5 text-muted-foreground" />
                         </a>
                       )}
                       {socialLinks.website && (
                         <a href={socialLinks.website} target="_blank" rel="noopener noreferrer" aria-label="Website"
-                           className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-green-50 hover:bg-green-100 dark:bg-green-950 dark:hover:bg-green-900 transition-colors">
+                          className="inline-flex items-center justify-center rounded-full w-10 h-10 bg-green-50 hover:bg-green-100 dark:bg-green-950 dark:hover:bg-green-900 transition-colors">
                           <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
                         </a>
                       )}

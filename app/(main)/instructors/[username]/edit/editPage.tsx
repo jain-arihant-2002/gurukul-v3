@@ -1,0 +1,43 @@
+"use client";
+
+import React, { useState } from "react";
+import InstructorForm from "../../register/_component/instructorForm";
+import type { Instructor } from "@/utils/types";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { updateInstructorProfileAction } from "../../_action/action";
+
+export default function EditTeacherProfilePage({ initialData }: { initialData: Partial<Instructor> }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (data: any) => {
+    setIsSubmitting(true);
+    try {
+      const result = await updateInstructorProfileAction({ ...data, id: initialData.id });
+
+      if (result?.error) {
+        return toast.error(result.message || "Failed to update instructor profile.");
+
+      } else {
+        toast.success("Instructor profile updated successfully!");
+        // Redirect to the instructor's profile page
+        router.push(`/instructors/`);
+      }
+    } catch (error) {
+      toast.error("Failed to update instructor profile. Please try again.");
+      console.error("Failed to update instructor profile:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <InstructorForm
+      mode="edit"
+      initialData={initialData}
+      onSubmit={handleSubmit}
+      isSubmitting={isSubmitting}
+    />
+  );
+}

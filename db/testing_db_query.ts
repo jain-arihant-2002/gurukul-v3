@@ -7,11 +7,11 @@ import { faker } from "@faker-js/faker";
 import { LectureType, type QuizQuestion, type SocialLink } from "../utils/types"; // <-- IMPORT THE ENUM
 
 // --- CONFIGURATION ---
-const NUM_USERS = 13;
-const NUM_INSTRUCTORS = 3; // Must be <= NUM_USERS
-const COURSES_PER_INSTRUCTOR = 1;
-const SECTIONS_PER_COURSE = 3;
-const LECTURES_PER_SECTION = 4;
+const NUM_USERS = 50;
+const NUM_INSTRUCTORS = 10; // Must be <= NUM_USERS
+const COURSES_PER_INSTRUCTOR = 3;
+const SECTIONS_PER_COURSE = 5;
+const LECTURES_PER_SECTION = 8;
 
 // --- DATABASE CONNECTION ---
 if (!process.env.DATABASE_URL) {

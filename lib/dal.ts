@@ -1,8 +1,9 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
-import { CourseFormData, CreateCourseDbInput } from "@/utils/types";
+import { CourseFormData, CreateCourseDbInput, Instructor } from "@/utils/types";
+import { ApiResponse } from "@/utils/apiResponse";
 
 export const getCoursesCard = cache(async (options: { limit?: number, offset?: number }) => {
     const { limit, offset } = options;
@@ -69,3 +70,37 @@ export const updateCourse = cache(async (courseData: CourseFormData, userId: str
     return result;
 })
 
+
+export const createInstructorProfile = cache(async (instructorData: Partial<Instructor>) => {
+    const newInstructor = await createInstructorProfileInDb({
+        id: instructorData.id,
+        headline: instructorData.headline,
+        bio: instructorData.bio,
+        expertise: instructorData.expertise,
+        socialLinks: instructorData.socialLinks ?? [],
+    })
+    return newInstructor;
+})
+
+
+export const updateInstructorProfile = cache(async (instructorData: Partial<Instructor>) => {
+    const { id, headline, bio, expertise, socialLinks } = instructorData;
+
+
+    const updatedInstructor = await updateInstructorProfileInDb({
+        id,
+        headline,
+        bio,
+        expertise,
+        socialLinks: socialLinks ?? [],
+    });
+    return updatedInstructor
+})
+
+
+export const getInstructorById = async (id: string) => {
+    const instructor = await getInstructorByIdFromDb(id);
+    if (!instructor)
+        throw new Error("Instructor not found");
+    return instructor;
+}

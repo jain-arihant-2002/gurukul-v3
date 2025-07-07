@@ -12,7 +12,7 @@ export default function JoinAsTeacherPage() {
         <p className="text-muted-foreground text-lg mb-10">
           Share your knowledge and inspire learners around the world. Become a part of our passionate teaching community and help shape the future of education.
         </p>
-        <Link href="/onboarding/teacher">
+        <Link href="/instructors/register">
           <Button size="lg" className="text-lg px-8 py-4">
             Become a Teacher
           </Button>
@@ -72,7 +72,7 @@ export default function JoinAsTeacherPage() {
         <p className="text-muted-foreground mb-8 max-w-xl mx-auto">
           Take the first step towards making a difference. Join our teaching community today!
         </p>
-        <Link href="/onboarding/teacher">
+        <Link href="/instructors/register">
           <Button size="lg" className="text-lg px-8 py-4">
             Become a Teacher
           </Button>

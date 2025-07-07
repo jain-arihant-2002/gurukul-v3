@@ -29,7 +29,7 @@ export function Navbar() {
         { href: "/instructors/page/1", label: "Instructors" },
         { href: "/about", label: "About" },
         { href: "/contact", label: "Contact Us" },
-        { href: "/Teacher", label: "Teach on Gurukul" },
+        { href: "/teacher", label: "Teach on Gurukul" },
     ];
 
     // --- Components ---

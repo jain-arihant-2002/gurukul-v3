@@ -26,7 +26,7 @@ export function InstructorCard({ instructor }: { instructor: InstructorCard }) {
         <CardTitle className="text-lg font-semibold">{instructor.name}</CardTitle>
         <div className="flex flex-wrap justify-center gap-1 mt-2 max-w-[220px] mx-auto">
           {(instructor.expertise).map((tag, idx) => (
-            <Badge key={idx} variant="secondary" className="text-xs truncate max-w-[90px]" title={tag}>
+            <Badge key={idx} variant="secondary" className="text-xs truncate " title={tag}>
               {tag}
             </Badge>
           ))}

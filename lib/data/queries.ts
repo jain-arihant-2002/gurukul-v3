@@ -265,7 +265,7 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
 //     }
 //     return data ?? null;
 // })
-export async function createCourseInDb(courseData: CreateCourseDbInput) {
+export const createCourseInDb = cache(async (courseData: CreateCourseDbInput) => {
     const { data, error } = await tryCatch(
         db.transaction(async (tx) => {
             // Insert the course
@@ -308,11 +308,12 @@ export async function createCourseInDb(courseData: CreateCourseDbInput) {
         }
     }
     return { data, error: null, status: 201 };
-}
+
+});
 
 
 
-export async function updateCourseInDb(courseData: CreateCourseDbInput, courseId: string) {
+export const updateCourseInDb = cache(async (courseData: CreateCourseDbInput, courseId: string) => {
     const currentCourse = await getCourseByIdFromDb(courseId);
 
     if (!currentCourse) {
@@ -376,10 +377,10 @@ export async function updateCourseInDb(courseData: CreateCourseDbInput, courseId
     }
 
     return { data, error: null, status: 200 };
-}
+});
 
 
-export async function getCourseByIdFromDb(id: string) {
+export const getCourseByIdFromDb = cache(async (id: string) => {
     const { data, error } = await tryCatch(
         db.query.courses.findFirst({
             where: eq(courses.id, id)
@@ -390,4 +391,98 @@ export async function getCourseByIdFromDb(id: string) {
         return null;
     }
     return data ?? null;
-}
+});
+
+export const createInstructorProfileInDb = cache(async (instructorData: Partial<InstructorDetails>) => {
+    // Destructure only the fields that will be used
+    const {
+        id,
+        headline,
+        bio,
+        expertise,
+        socialLinks
+    } = instructorData;
+
+    // Validate required fields
+    if (!id || !headline || !bio) {
+        throw new Error("Missing required instructor fields");
+    }
+
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            const insertedInstructor = await tx.insert(instructors).values({
+                id,
+                headline,
+                bio,
+                expertise,
+                socialLinks: socialLinks ?? [],
+            }).returning();
+
+            if (insertedInstructor.length === 0) {
+                throw new Error("Instructor profile creation failed");
+            }
+            // Update user role to instructor
+            await tx.update(user)
+                .set({ role: "instructor" })
+                .where(eq(user.id, id));
+
+            return insertedInstructor[0];
+        })
+    );
+    if (error) {
+        const dbError = error.cause as { code?: string; detail?: string; constraint?: string; message?: string };
+        switch (dbError.code) {
+            case "23505":
+                return { error: "You are already a instructor", status: 409, data: null };
+            case "23503":
+                return { error: "Invalid User.", status: 400, data: null };
+            case "23502":
+                return { error: "Missing required field.", status: 422, data: null };
+            default:
+                console.error("Error in updateCourseInDb:", error);
+                return { error: dbError.detail || dbError.message || "Database error", status: 500, data: null };
+        }
+    }
+
+    return { data, error: null, status: 201 };
+
+})
+
+export const updateInstructorProfileInDb = cache(async (instructorData: Partial<InstructorDetails>) => {
+    const {
+        id,
+        headline,
+        bio,
+        expertise,
+        socialLinks
+    } = instructorData;
+
+    if (!id) {
+        return { error: "Instructor ID is required", status: 400, data: null };
+    }
+
+    const { data, error } = await tryCatch(
+        db.update(instructors)
+            .set({
+                headline,
+                bio,
+                expertise,
+                socialLinks: socialLinks ?? [],
+            }).where(eq(instructors.id, id)).returning()
+    );
+    if (error) {
+        console.error("Error in updateInstructorProfileInDb:", error);
+        return { error: error.message || "Database error", status: 500, data: null };
+    }
+    return { data: data[0], error: null, status: 200 };
+})
+
+export const getInstructorByIdFromDb = cache(async (id: string) => {
+    const { data, error } = await tryCatch(
+        db.select().from(instructors).where(eq(instructors.id, id))
+    );
+    if (error)
+        return { data: null, error: error.message || "Database error", status: 500 };
+
+    return { data: data[0] || null, error: null, status: 200 };
+});
