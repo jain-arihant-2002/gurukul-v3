@@ -1,87 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import CourseForm from "../_component/CourseForm";
-import { CourseLevel, CourseStatus } from "@/utils/types";
-import { useRouter } from "next/router";
+import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-session";
-
-type CourseFormData = {
-  title: string;
-  slug: string;
-  shortDescription: string;
-  longDescriptionHtml: string;
-  price: string;
-  language: string;
-  level: CourseLevel;
-  status: CourseStatus;
-  categories: string[];
-  whatWillYouLearn: string[];
-  prerequisites?: string[];
-  coverImageUrl?: string;
-};
+import { createCourseAction } from "../_actions/action";
 
 export default function AddCoursePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { isInstructor, isAdmin, isPending } = useAuth();
+  const { user, isInstructor, isAdmin, isPending } = useAuth();
+  const router = useRouter();
 
+  useEffect(() => {
+    if (isPending) return;
 
-  if (isPending)
-    return;
+    if (!user) {
+      router.push("/sign-in");
+      return
+    }
 
-  if (!isInstructor && !isAdmin) {
-    useRouter().push("/not-found");
-    setIsSubmitting(true);
-  }
+    if (!isInstructor && !isAdmin) {
+      router.push("/not-found");
+      return
+    }
+  }, [isPending, isInstructor, isAdmin, router]);
+
+  if (isPending || (!isInstructor && !isAdmin)) return null;
+
   const handleSubmit = async (data: any) => {
-
-
     try {
+      setIsSubmitting(true);
       const payload: CourseFormData = {
         ...data,
         level: data.level as CourseLevel,
         status: data.status as CourseStatus,
       };
-      //Todo sanitize longDescriptionHtml
+      const result = await createCourseAction(payload)
 
-      // Console log all form data
-      console.log("=== COURSE FORM SUBMISSION ===");
-      console.log("Form Data:", payload);
-
-      // Log individual fields for better debugging
-      console.log("Course Details:", {
-        title: payload.title,
-        slug: payload.slug,
-        shortDescription: payload.shortDescription,
-        price: payload.price,
-        language: payload.language,
-        level: payload.level,
-        status: payload.status
-      });
-
-      console.log("Course Content:", {
-        longDescriptionHtml: payload.longDescriptionHtml,
-        categories: payload.categories,
-        whatWillYouLearn: payload.whatWillYouLearn,
-        prerequisites: payload.prerequisites
-      });
-
-      console.log("Image Info:", {
-        coverImageUrl: payload.coverImageUrl,
-        base64Length: payload.coverImageUrl?.length || 0
-      });
-
-      // TODO: Implement course creation API call
-      // TODO: Image upload will be handled with presigned URLs
-      // The base64 string will be sent to the server and converted back to file
-      // for uploading to cloud storage using presigned URLs
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 2000));
-
-      toast.success("Course created successfully!");
-
+      if (result.error) {
+        toast.error(result.message);
+        return
+      }
+      if (result.success && result.data?.status === 'published') {
+        toast.success("Course created successfully!");
+        router.push(`/courses/${result.data?.slug}`);
+      } else {
+        toast.success("Course created successfully!");
+        router.push(`/courses/${result.data?.slug}/edit`);
+      }
     } catch (error) {
       console.error("Error creating course:", error);
       toast.error("Failed to create course. Please try again.");

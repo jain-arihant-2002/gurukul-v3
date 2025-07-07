@@ -19,15 +19,6 @@ function formatDate(dateString: string) {
   });
 }
 
-function formatDuration(totalDurationSeconds: number) {
-  const hours = Math.floor(totalDurationSeconds / 3600);
-  const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
-}
 
 function renderStars(rating: number) {
   const fullStars = Math.floor(rating);
@@ -61,7 +52,7 @@ function renderStars(rating: number) {
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const course = await getCourseBySlug(slug,'published');
+  const course = await getCourseBySlug(slug, 'published');
 
   if (!course) {
     return (
@@ -80,7 +71,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         {/* Left section: sticky on scroll */}
         <div className="md:w-1/3 flex-shrink-0 md:sticky md:top-8 self-start">
           <img
-            src={course?.coverImageUrl || "/placeholder-course-cover.jpg"}
+            src={course?.coverImage || "/placeholder-course-cover.jpg"}
             alt={course.title}
             className="w-full h-56 object-cover rounded-lg shadow"
           />
@@ -120,7 +111,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   <span className="text-sm font-medium">Duration</span>
                   <div className="flex items-center gap-1">
                     <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm">{formatDuration(course.totalDurationSeconds)}</span>
+                    <span className="text-sm">{course.totalDurationHours}</span>
                   </div>
                 </div>
 
@@ -221,7 +212,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             </span>
             <span className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
-              {formatDuration(course.totalDurationSeconds)}
+              { }
             </span>
           </div>
 
@@ -270,7 +261,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             Course Content
           </h2>
           <div className="mb-4 text-sm text-muted-foreground">
-            {course.sections.length} sections • {course.sections.reduce((acc, section) => acc + section.lectures.length, 0)} lectures • {formatDuration(course.totalDurationSeconds)} total length
+            {course.sections.length} sections • {course.sections.reduce((acc, section) => acc + section.lectures.length, 0)} lectures • {course.totalDurationHours} total length
           </div>
 
           <Accordion type="multiple" className="mb-8">
@@ -298,7 +289,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{video.title}</span>
                           <span className="text-xs text-muted-foreground">
-                            ({formatDuration(video.durationInSeconds)})
+                            ({course.totalDurationHours})
                           </span>
                           {video.isFreePreview && (
                             <Badge

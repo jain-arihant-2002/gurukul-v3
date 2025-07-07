@@ -24,7 +24,7 @@ export default async function AllCoursesPage({ params }: { params: Promise<{ pag
 
     const offset = COURSES_PER_PAGE * (page - 1);
     const Course = await getCoursesCard({ limit: COURSES_PER_PAGE, offset }); // Fetching courses with pagination
-    console.log("Courses fetched for page:", page, "Total pages:", totalPages, "Courses count:", totalCoursesCount,"Course ",Course);
+
     return (
         <section className="w-[80%] mx-auto my-12">
             <div className="flex justify-between items-center mb-8">
@@ -38,7 +38,7 @@ export default async function AllCoursesPage({ params }: { params: Promise<{ pag
                 more!
             </p>
             {
-                Course.length>0 ?
+                Course.length > 0 ?
                     <CourseList Courses={Course} />
                     : <p>No Courses found </p>
             }

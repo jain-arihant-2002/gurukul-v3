@@ -49,7 +49,7 @@ const courseSchema = z.object({
     categories: z.array(z.string()).min(1, "At least one category is required"),
     whatWillYouLearn: z.array(z.string()).min(1, "At least one learning outcome is required"),
     prerequisites: z.array(z.string()).optional(),
-    coverImageUrl: z.string().optional(),
+    coverImage: z.string().optional(),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
@@ -70,7 +70,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
 
     // Image preview state
     const [selectedImage, setSelectedImage] = useState<File | null>(null);
-    const [imagePreview, setImagePreview] = useState<string | null>(initialData?.coverImageUrl || null);
+    const [imagePreview, setImagePreview] = useState<string | null>(initialData?.coverImage || null);
 
     const form = useForm<CourseFormData>({
         resolver: zodResolver(courseSchema),
@@ -86,7 +86,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
             categories: initialData?.categories || [],
             whatWillYouLearn: initialData?.whatWillYouLearn || [],
             prerequisites: initialData?.prerequisites || [],
-            coverImageUrl: initialData?.coverImageUrl || "",
+            coverImage: initialData?.coverImage || "",
         },
     });
 
@@ -138,7 +138,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
             reader.readAsDataURL(file);
 
             // Store base64 string in form 
-            form.setValue("coverImageUrl", base64String);
+            form.setValue("coverImage", base64String);
 
             toast.success("Image selected and converted to base64 successfully!");
         } catch (error) {
@@ -151,7 +151,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
     const removeSelectedImage = () => {
         setSelectedImage(null);
         setImagePreview(null);
-        form.setValue("coverImageUrl", "");
+        form.setValue("coverImage", "");
 
         // Reset file input
         const fileInput = document.getElementById("cover-image") as HTMLInputElement;
@@ -163,9 +163,9 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
     // Add category
     const addCategory = () => {
         if (categoryInput.trim()) {
-            const currentCategories = form.getValues("categories");
+            const currentCategories = form.getValues("categories") || [];
             if (!currentCategories.includes(categoryInput.trim())) {
-                form.setValue("categories", [...currentCategories, categoryInput.trim()]);
+                form.setValue("categories", [...currentCategories, categoryInput.trim()], { shouldValidate: true });
                 setCategoryInput("");
             }
         }
@@ -173,38 +173,62 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
 
     // Remove category
     const removeCategory = (categoryToRemove: string) => {
-        const currentCategories = form.getValues("categories");
-        form.setValue("categories", currentCategories.filter(cat => cat !== categoryToRemove));
+        const currentCategories = form.getValues("categories") || [];
+        form.setValue(
+            "categories",
+            currentCategories.filter(cat => cat !== categoryToRemove),
+            { shouldValidate: true }
+        );
     };
 
     // Add learning outcome
     const addLearningOutcome = () => {
         if (learningOutcomeInput.trim()) {
-            const currentOutcomes = form.getValues("whatWillYouLearn");
-            form.setValue("whatWillYouLearn", [...currentOutcomes, learningOutcomeInput.trim()]);
-            setLearningOutcomeInput("");
+            const currentOutcomes = form.getValues("whatWillYouLearn") || [];
+            if (!currentOutcomes.includes(learningOutcomeInput.trim())) {
+                form.setValue(
+                    "whatWillYouLearn",
+                    [...currentOutcomes, learningOutcomeInput.trim()],
+                    { shouldValidate: true }
+                );
+                setLearningOutcomeInput("");
+            }
         }
     };
 
     // Remove learning outcome
     const removeLearningOutcome = (index: number) => {
-        const currentOutcomes = form.getValues("whatWillYouLearn");
-        form.setValue("whatWillYouLearn", currentOutcomes.filter((_, i) => i !== index));
+        const currentOutcomes = form.getValues("whatWillYouLearn") || [];
+        form.setValue(
+            "whatWillYouLearn",
+            currentOutcomes.filter((_, i) => i !== index),
+            { shouldValidate: true }
+        );
     };
 
     // Add prerequisite
     const addPrerequisite = () => {
         if (prerequisiteInput.trim()) {
             const currentPrerequisites = form.getValues("prerequisites") || [];
-            form.setValue("prerequisites", [...currentPrerequisites, prerequisiteInput.trim()]);
-            setPrerequisiteInput("");
+            if (!currentPrerequisites.includes(prerequisiteInput.trim())) {
+                form.setValue(
+                    "prerequisites",
+                    [...currentPrerequisites, prerequisiteInput.trim()],
+                    { shouldValidate: true }
+                );
+                setPrerequisiteInput("");
+            }
         }
     };
 
     // Remove prerequisite
     const removePrerequisite = (index: number) => {
         const currentPrerequisites = form.getValues("prerequisites") || [];
-        form.setValue("prerequisites", currentPrerequisites.filter((_, i) => i !== index));
+        form.setValue(
+            "prerequisites",
+            currentPrerequisites.filter((_, i) => i !== index),
+            { shouldValidate: true }
+        );
     };
 
     // Handle drag and drop
@@ -246,7 +270,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
             // Reset to initial data for edit mode
             form.reset(initialData as CourseFormData);
             setSelectedImage(null);
-            setImagePreview(initialData?.coverImageUrl || null);
+            setImagePreview(initialData?.coverImage || null);
         }
     };
 
@@ -279,9 +303,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="title"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Course Title *</FormLabel>
+                                                <FormLabel htmlFor="course-title">Course Title *</FormLabel>
                                                 <FormControl>
                                                     <Input
+                                                        id="course-title"
                                                         placeholder="Enter course title"
                                                         {...field}
                                                     />
@@ -296,9 +321,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="slug"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Course Slug *</FormLabel>
+                                                <FormLabel htmlFor="course-slug">Course Slug *</FormLabel>
                                                 <FormControl>
                                                     <Input
+                                                        id="course-slug"
                                                         placeholder="course-slug"
                                                         {...field}
                                                         onChange={(e) => {
@@ -322,9 +348,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="shortDescription"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Short Description *</FormLabel>
+                                            <FormLabel htmlFor="course-short-description">Short Description *</FormLabel>
                                             <FormControl>
                                                 <Textarea
+                                                    id="course-short-description"
                                                     placeholder="Brief description of your course (max 200 characters)"
                                                     className="min-h-[100px]"
                                                     {...field}
@@ -344,7 +371,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="longDescriptionHtml"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Detailed Description *</FormLabel>
+                                            <FormLabel htmlFor="course-long-description">Detailed Description *</FormLabel>
                                             <FormControl>
                                                 <RichTextEditor
                                                     content={field.value}
@@ -365,9 +392,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="price"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Price (USD) *</FormLabel>
+                                                <FormLabel htmlFor="course-price">Price (USD) *</FormLabel>
                                                 <FormControl>
                                                     <Input
+                                                        id="course-price"
                                                         type="number"
                                                         step="0.01"
                                                         min="0"
@@ -385,10 +413,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="language"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Language *</FormLabel>
+                                                <FormLabel htmlFor="course-language">Language *</FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger id="course-language">
                                                             <SelectValue placeholder="Select language" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -410,10 +438,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="level"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel>Course Level *</FormLabel>
+                                                <FormLabel htmlFor="course-level">Course Level *</FormLabel>
                                                 <Select onValueChange={field.onChange} value={field.value}>
                                                     <FormControl>
-                                                        <SelectTrigger>
+                                                        <SelectTrigger id="course-level">
                                                             <SelectValue placeholder="Select level" />
                                                         </SelectTrigger>
                                                     </FormControl>
@@ -436,16 +464,17 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="status"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Status *</FormLabel>
+                                            <FormLabel htmlFor="course-status">Status *</FormLabel>
                                             <Select onValueChange={field.onChange} value={field.value}>
                                                 <FormControl>
-                                                    <SelectTrigger className="w-full md:w-48">
+                                                    <SelectTrigger id="course-status" className="w-full md:w-48">
                                                         <SelectValue placeholder="Select status" />
                                                     </SelectTrigger>
                                                 </FormControl>
                                                 <SelectContent>
                                                     <SelectItem value="draft">Draft</SelectItem>
                                                     <SelectItem value="published">Published</SelectItem>
+                                                    {mode === 'edit' && <SelectItem value="archived">Archived</SelectItem>}
                                                 </SelectContent>
                                             </Select>
                                             <FormMessage />
@@ -456,10 +485,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                 {/* Cover Image with Preview */}
                                 <FormField
                                     control={form.control}
-                                    name="coverImageUrl"
+                                    name="coverImage"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Course Cover Image</FormLabel>
+                                            <FormLabel htmlFor="cover-image">Course Cover Image</FormLabel>
 
                                             {/* Image Preview */}
                                             {imagePreview && (
@@ -469,7 +498,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                                             <img
                                                                 src={imagePreview}
                                                                 alt="Course cover preview"
-                                                                
+
                                                                 className="object-cover fill"
                                                             />
                                                         </div>
@@ -495,8 +524,8 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                             {!imagePreview && (
                                                 <div
                                                     className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${dragActive
-                                                            ? "border-primary bg-primary/10"
-                                                            : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                                                        ? "border-primary bg-primary/10"
+                                                        : "border-muted-foreground/25 hover:border-muted-foreground/50"
                                                         }`}
                                                     onDragEnter={handleDrag}
                                                     onDragLeave={handleDrag}
@@ -563,9 +592,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="categories"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Course Categories *</FormLabel>
+                                            <FormLabel htmlFor="course-categories">Course Categories *</FormLabel>
                                             <div className="flex gap-2 mb-3">
                                                 <Input
+                                                    id="course-categories"
                                                     placeholder="Add a category"
                                                     value={categoryInput}
                                                     onChange={(e) => setCategoryInput(e.target.value)}
@@ -611,9 +641,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="whatWillYouLearn"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>What Will Students Learn? *</FormLabel>
+                                            <FormLabel htmlFor="course-what-will-you-learn">What Will Students Learn? *</FormLabel>
                                             <div className="flex gap-2 mb-3">
                                                 <Input
+                                                    id="course-what-will-you-learn"
                                                     placeholder="Add a learning outcome"
                                                     value={learningOutcomeInput}
                                                     onChange={(e) => setLearningOutcomeInput(e.target.value)}
@@ -658,9 +689,10 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     name="prerequisites"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Course Prerequisites (Optional)</FormLabel>
+                                            <FormLabel htmlFor="course-prerequisites">Course Prerequisites (Optional)</FormLabel>
                                             <div className="flex gap-2 mb-3">
                                                 <Input
+                                                    id="course-prerequisites"
                                                     placeholder="Add a prerequisite"
                                                     value={prerequisiteInput}
                                                     onChange={(e) => setPrerequisiteInput(e.target.value)}

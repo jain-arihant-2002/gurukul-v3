@@ -7,11 +7,11 @@ import { faker } from "@faker-js/faker";
 import { LectureType, type QuizQuestion, type SocialLink } from "../utils/types"; // <-- IMPORT THE ENUM
 
 // --- CONFIGURATION ---
-const NUM_USERS = 60;
-const NUM_INSTRUCTORS = 35; // Must be <= NUM_USERS
-const COURSES_PER_INSTRUCTOR = 3;
-const SECTIONS_PER_COURSE = 5;
-const LECTURES_PER_SECTION = 7;
+const NUM_USERS = 13;
+const NUM_INSTRUCTORS = 3; // Must be <= NUM_USERS
+const COURSES_PER_INSTRUCTOR = 1;
+const SECTIONS_PER_COURSE = 3;
+const LECTURES_PER_SECTION = 4;
 
 // --- DATABASE CONNECTION ---
 if (!process.env.DATABASE_URL) {
@@ -120,7 +120,7 @@ export const seedDatabaseWithAllFields = async () => {
           title: courseTitle,
           shortDescription: faker.lorem.sentence(),
           longDescriptionHtml: `<p>${faker.lorem.paragraphs({ min: 3, max: 5 }).replace(/\n/g, "</p><p>")}</p>`,
-          coverImageUrl: faker.image.urlLoremFlickr({ category: 'technology' }),
+          coverImage: faker.image.urlLoremFlickr({ category: 'technology' }),
           // --- FIX 1: `precision` -> `fractionDigits` ---
           rating: faker.number.float({ min: 3.5, max: 5.0, fractionDigits: 1 }).toString(),
           price: faker.helpers.arrayElement(["0.00", "19.99", "49.99", "99.99"]),
@@ -135,7 +135,7 @@ export const seedDatabaseWithAllFields = async () => {
       createdCourseIds.push(newCourse.id);
       allLectureIdsByCourse[newCourse.id] = [];
 
-      let totalDurationSeconds = 0;
+      let totalDurationHours = 0;
       for (let j = 0; j < SECTIONS_PER_COURSE; j++) {
         const [newSection] = await db.insert(schema.sections).values({
           id: faker.string.uuid(),
@@ -149,7 +149,7 @@ export const seedDatabaseWithAllFields = async () => {
           // --- FIX 2: Use the imported enum, not strings ---
           const lectureType = faker.helpers.arrayElement([LectureType.VIDEO, LectureType.ARTICLE, LectureType.QUIZ]);
           const duration = lectureType === LectureType.VIDEO ? faker.number.int({ min: 120, max: 900 }) : 0;
-          totalDurationSeconds += duration;
+          totalDurationHours += duration;
           
           const [newLecture] = await db.insert(schema.lectures).values({
               id: faker.string.uuid(),
@@ -176,7 +176,7 @@ export const seedDatabaseWithAllFields = async () => {
         }
       }
       // --- FIX 3: Use eq() for the where clause ---
-      await db.update(schema.courses).set({ totalDurationSeconds }).where(eq(schema.courses.id, newCourse.id));
+      await db.update(schema.courses).set({ totalDurationHours }).where(eq(schema.courses.id, newCourse.id));
     }
     // --- FIX 3: Use eq() for the where clause ---
     await db.update(schema.instructors).set({ coursesCount: instructorCoursesCount }).where(eq(schema.instructors.id, instructorId));

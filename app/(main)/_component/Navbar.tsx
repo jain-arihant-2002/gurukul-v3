@@ -8,12 +8,12 @@ import { useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import UserDropDown from "@/components/user-dropdown";
+import { useAuth } from "@/lib/auth/use-session";
 
 export function Navbar() {
-    const { data: session } = authClient.useSession();
-
+    const {session} = useAuth()
+    
     const logOut = async () => {
-        console.log("Logging out...");
         await authClient.signOut({
             fetchOptions: {
                 onSuccess: () => {
@@ -147,7 +147,7 @@ export function Navbar() {
                 </Button>
             </Link>
         ) : (
-            <UserDropDown avatarSrc={session.user.image || '/default-avatar.png'} avatarAlt={session.user.name.charAt(0)} fullname={session.user.name} email={session.user.email} onLogout={logOut} />
+            <UserDropDown avatarSrc={session.user.image || '/placeholder-avatar.png'} avatarAlt={session.user.name.charAt(0)} fullname={session.user.name} email={session.user.email} onLogout={logOut} />
             // <Button
             //     variant="destructive"
             //     onClick={logOut}

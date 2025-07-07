@@ -32,7 +32,7 @@ CREATE TABLE "courses" (
 	"language" text DEFAULT 'English' NOT NULL,
 	"level" "course_level" DEFAULT 'all-levels' NOT NULL,
 	"status" "course_status" DEFAULT 'draft' NOT NULL,
-	"total_duration_seconds" integer DEFAULT 0 NOT NULL,
+	"total_duration_hours" integer DEFAULT 0 NOT NULL,
 	"categories" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"what_will_you_learn" jsonb DEFAULT '[]'::jsonb NOT NULL,
 	"prerequisites" jsonb DEFAULT '[]'::jsonb NOT NULL,

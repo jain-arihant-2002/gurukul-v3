@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { courses, instructors, lectures, sections, user } from "@/db/schema";
 import { db } from "../../db/db";
-import { CourseCard, CourseDetails, CourseLevel, InstructorCard, InstructorDetails, LectureType } from "@/utils/types";
+import { CourseCard, CourseDetails, CourseLevel, CreateCourseDbInput, InstructorCard, InstructorDetails, LectureType } from "@/utils/types";
 import { and, count, desc, eq, gt, sql } from "drizzle-orm";
 import { tryCatch } from "@/utils/trycatch";
 
@@ -11,7 +11,7 @@ export const getPublishedCourseCardFromDb = cache(async (options: { limit?: numb
         id: courses.id,
         slug: courses.slug,
         title: courses.title,
-        coverImageUrl: courses.coverImageUrl,
+        coverImage: courses.coverImage,
         categories: courses.categories,
         price: courses.price,
         rating: courses.rating,
@@ -57,11 +57,7 @@ export const getPublishedInstructorCardFromDb = cache(async (options: { limit?: 
         avatarUrl: user.image,
         bio: instructors.headline,
         expertise: instructors.expertise,
-        coursesCount: sql<number>`(
-            SELECT count(*)
-            FROM ${courses}
-            WHERE ${courses.authorId} = ${user.id} AND ${courses.status} = 'published'
-        )::int`.as("courses_count"),
+        coursesCount: instructors.coursesCount,
     }).from(instructors)
         .innerJoin(user, eq(instructors.id, user.id))
         .where(and(
@@ -171,6 +167,7 @@ export const getCourseBySlugFromDb = cache(async (slug: string, status?: string)
         authorUsername: author.user.username,
         price: Number(rest.price),
         rating: Number(rest.rating),
+        totalDurationHours: rest.totalDurationHours ?? "", // Use the correct property name
         createdAt: rest.createdAt instanceof Date ? rest.createdAt.toISOString() : rest.createdAt,
         updatedAt: rest.updatedAt instanceof Date ? rest.updatedAt.toISOString() : rest.updatedAt,
         sections: rest.sections.map(section => ({
@@ -189,6 +186,7 @@ export const getCourseBySlugFromDb = cache(async (slug: string, status?: string)
 export const getInstructorByUsernameFromDb = cache(async (username: string): Promise<InstructorDetails | null> => {
     const { data, error } = await tryCatch(
         db.query.user.findFirst({
+            orderBy: desc(user.createdAt),
             where: eq(user.username, username),
             columns: {
                 id: true,
@@ -204,7 +202,7 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
                                 id: true,
                                 slug: true,
                                 title: true,
-                                coverImageUrl: true,
+                                coverImage: true,
                                 categories: true,
                                 price: true,
                                 rating: true,
@@ -213,7 +211,6 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
                                 createdAt: true,
                                 enrollmentCount: true,
                                 shortDescription: true
-
                             }
                         }
                     }
@@ -268,3 +265,129 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
 //     }
 //     return data ?? null;
 // })
+export async function createCourseInDb(courseData: CreateCourseDbInput) {
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            // Insert the course
+            const inserted = await tx.insert(courses).values({
+                ...courseData,
+                price: typeof courseData.price === "number"
+                    ? courseData.price.toFixed(2)
+                    : courseData.price
+            }).returning();
+
+            // If published, increment instructor's coursesCount
+            if (inserted[0]?.status === "published") {
+                await tx.update(instructors)
+                    .set({
+                        coursesCount: sql`${instructors.coursesCount} + 1`
+                    })
+                    .where(eq(instructors.id, courseData.authorId));
+            }
+
+            return inserted[0];
+        })
+    );
+
+    if (error) {
+        const dbError = error.cause as { code?: string; detail?: string; constraint?: string; message?: string };
+        switch (dbError.code) {
+            case "23505":
+                // Unique violation (e.g., duplicate slug)
+                return { error: "A course with this slug already exists.", status: 409, data: null };
+            case "23503":
+                // Foreign key violation
+                return { error: "Invalid author.", status: 400, data: null };
+            case "23502":
+                // Not null violation
+                return { error: "Missing required course field.", status: 422, data: null };
+            default:
+                // General fallback for other errors
+                console.error("Error in createCourseInDb:", error);
+                return { error: dbError.detail || dbError.message || "Database error", status: 500, data: null };
+        }
+    }
+    return { data, error: null, status: 201 };
+}
+
+
+
+export async function updateCourseInDb(courseData: CreateCourseDbInput, courseId: string) {
+    const currentCourse = await getCourseByIdFromDb(courseId);
+
+    if (!currentCourse) {
+        return { error: "Course not found", status: 404, data: null };
+    }
+
+    // Use transaction to ensure both course update and count update happen atomically
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            // Update the course
+            const updatedCourse = await tx.update(courses)
+                .set({
+                    ...courseData,
+                    price: typeof courseData.price === "number"
+                        ? courseData.price.toFixed(2)
+                        : courseData.price
+                })
+                .where(eq(courses.id, courseData.id))
+                .returning();
+
+            if (updatedCourse.length === 0) {
+                // Throw to ensure tryCatch catches it as an error
+                throw new Error("Course update failed");
+            }
+
+            const newStatus = updatedCourse[0].status;
+            const oldStatus = currentCourse.status;
+
+            // Update instructor's course count based on status change
+            if (oldStatus === 'published' && newStatus !== 'published') {
+                await tx.update(instructors)
+                    .set({
+                        coursesCount: sql`${instructors.coursesCount} - 1`
+                    })
+                    .where(eq(instructors.id, courseData.authorId));
+            } else if (oldStatus !== 'published' && newStatus === 'published') {
+                await tx.update(instructors)
+                    .set({
+                        coursesCount: sql`${instructors.coursesCount} + 1`
+                    })
+                    .where(eq(instructors.id, courseData.authorId));
+            }
+
+            return updatedCourse[0];
+        })
+    );
+
+    if (error) {
+        const dbError = error.cause as { code?: string; detail?: string; constraint?: string; message?: string };
+        switch (dbError.code) {
+            case "23505":
+                return { error: "A course with this slug already exists.", status: 409, data: null };
+            case "23503":
+                return { error: "Invalid author.", status: 400, data: null };
+            case "23502":
+                return { error: "Missing required course field.", status: 422, data: null };
+            default:
+                console.error("Error in updateCourseInDb:", error);
+                return { error: dbError.detail || dbError.message || "Database error", status: 500, data: null };
+        }
+    }
+
+    return { data, error: null, status: 200 };
+}
+
+
+export async function getCourseByIdFromDb(id: string) {
+    const { data, error } = await tryCatch(
+        db.query.courses.findFirst({
+            where: eq(courses.id, id)
+        })
+    )
+    if (error) {
+        console.error("Error in getCourseByIdFromDb:", error);
+        return null;
+    }
+    return data ?? null;
+}

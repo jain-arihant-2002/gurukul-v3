@@ -13,8 +13,8 @@ export function InstructorCard({ instructor }: { instructor: InstructorCard }) {
       >
         <CardHeader className="flex flex-col items-center">
           <div className="w-16 h-16 rounded-full overflow-hidden mb-4 bg-muted flex items-center justify-center relative">
-            <Image
-              src={instructor.avatarUrl || ""}
+            <img
+              src={instructor.avatarUrl ?? "/placeholder-avatar.png"}
               alt={instructor.name}
               width={64}
               height={64}

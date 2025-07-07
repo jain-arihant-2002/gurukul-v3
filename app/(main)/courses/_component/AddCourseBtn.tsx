@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth/use-session";
 export default function AddCourseBtn() {
   const router = useRouter();
   const { isPending, isInstructor, isAdmin } = useAuth();
-
+  
   if (isPending || (!isInstructor && !isAdmin)) {
     return null;
   }

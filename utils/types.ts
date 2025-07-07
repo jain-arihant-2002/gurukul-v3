@@ -114,7 +114,7 @@ export type Course = {
   title: string;
   shortDescription: string;
   longDescriptionHtml: string;
-  coverImageUrl: string | null;
+  coverImage: string | null;
   rating: number;
   enrollmentCount: number;
   categories: string[];
@@ -124,7 +124,7 @@ export type Course = {
   status: CourseStatus;
   whatWillYouLearn: string[];
   prerequisites: string[];
-  totalDurationSeconds: number;
+  totalDurationHours: number;
   author: Instructor; // Nests the full instructor object
   sections: Section[]; // Nests the full sections array
   createdAt: string;
@@ -143,7 +143,7 @@ export type CourseCard = {
   id: string;
   slug: string;
   title: string;
-  coverImageUrl: string | null;
+  coverImage: string | null;
   categories: string[];
   price: number;
   rating: number;
@@ -180,7 +180,7 @@ export type CourseDetails = {
   title: string;
   shortDescription: string;
   longDescriptionHtml: string;
-  coverImageUrl: string | null;
+  coverImage: string | null;
   rating: number;
   enrollmentCount: number;
   categories: string[];
@@ -190,7 +190,7 @@ export type CourseDetails = {
   status: CourseStatus;
   whatWillYouLearn: string[];
   prerequisites: string[];
-  totalDurationSeconds: number;
+  totalDurationHours: number;
   createdAt: string;
   updatedAt: string;
   // Simplified author fields
@@ -271,4 +271,43 @@ export type ApiResponseType<T = null> = {
   code: number;
   message: string;
   error: string | null;
+};
+
+export type CourseFormData = {
+  id: string
+  title: string;
+  slug: string;
+  shortDescription: string;
+  longDescriptionHtml: string;
+  price: string; // Can be a string or number, but should be stored as a string in the database
+  language: string;
+  level: CourseLevel;
+  status: CourseStatus;
+  categories: string[];
+  whatWillYouLearn: string[];
+  prerequisites?: string[];
+  coverImage?: string;
+  createdAt?: Date; // used for updated courses
+};
+
+export type CreateCourseDbInput = {
+  id: string;
+  slug: string;
+  title: string;
+  shortDescription: string;
+  longDescriptionHtml: string;
+  coverImage?: string;
+  rating?: string; // default 0.0
+  enrollmentCount?: number; // default 0
+  price: number;
+  language: string;
+  level: CourseLevel;
+  status: CourseStatus;
+  totalDurationHours?: number; // default 0
+  categories: string[];
+  whatWillYouLearn: string[];
+  prerequisites?: string[];
+  authorId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 };

@@ -48,7 +48,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                   {/* Avatar and Basic Info */}
                   <div className="flex flex-col items-center text-center">
                     <Avatar className="w-32 h-32 mb-4 border-4 border-background shadow-lg">
-                      <AvatarImage src={instructor.avatarUrl || "/default-avatar.png"} alt={instructor.name} />
+                      <AvatarImage src={instructor.avatarUrl || "/placeholder-avatar.png"} alt={instructor.name} />
                       <AvatarFallback className="text-2xl font-bold">
                         {instructor.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>

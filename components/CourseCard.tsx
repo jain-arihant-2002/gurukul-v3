@@ -10,15 +10,7 @@ function formatDate(dateString: string) {
   return date.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 }
 
-function formatDuration(totalDurationSeconds: number) {
-  const hours = Math.floor(totalDurationSeconds / 3600);
-  const minutes = Math.floor((totalDurationSeconds % 3600) / 60);
-  
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
-  }
-  return `${minutes}m`;
-}
+
 
 export default function CourseCard({ course }: { course: CourseCard; }) {
   const renderStars = (rating: number) => {
@@ -56,7 +48,7 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
       <CardHeader className="p-0">
         <div className="relative w-full h-40 rounded-t-md overflow-hidden">
           <img
-            src={course.coverImageUrl || "/placeholder-image.png"} 
+            src={course.coverImage || "/placeholder-image.png"} 
             alt={course.title}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
             style={{ objectFit: "cover", width: "100%", height: "100%" }}

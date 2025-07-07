@@ -18,7 +18,7 @@ import type {
   LectureType,
   SocialLink,
   QuizQuestion,
-} from "../utils/types"; 
+} from "../utils/types";
 
 // =================================================================
 // --- ENUM DEFINITIONS ---
@@ -118,14 +118,14 @@ export const courses = pgTable("courses", {
   title: text("title").notNull(),
   shortDescription: text("short_description").notNull(),
   longDescriptionHtml: text("long_description_html").notNull(),
-  coverImageUrl: text("cover_image_url").default("").notNull(),
+  coverImage: text("cover_image").default("").notNull(),
   rating: decimal("rating", { precision: 2, scale: 1 }).default("0.0").notNull(),
   enrollmentCount: integer("enrollment_count").default(0).notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).default("0.00").notNull(),
   language: text("language").default("English").notNull(),
   level: courseLevelEnum("level").default("all-levels").notNull(),
   status: courseStatusEnum("status").default("draft").notNull(),
-  totalDurationSeconds: integer("total_duration_seconds").default(0).notNull(),
+  totalDurationHours: integer("total_duration_hours").default(0).notNull(),
   categories: jsonb("categories").$type<string[]>().default([]).notNull(),
   whatWillYouLearn: jsonb("what_will_you_learn").$type<string[]>().default([]).notNull(),
   prerequisites: jsonb("prerequisites").$type<string[]>().default([]).notNull(),

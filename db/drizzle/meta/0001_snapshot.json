@@ -1,6 +1,6 @@
 {
-  "id": "d470c0a3-54ae-4936-bc64-c159c29a7eac",
-  "prevId": "00000000-0000-0000-0000-000000000000",
+  "id": "159fcd6e-a83b-48ce-8e14-93ba14ea6feb",
+  "prevId": "d470c0a3-54ae-4936-bc64-c159c29a7eac",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -143,8 +143,8 @@
           "primaryKey": false,
           "notNull": true
         },
-        "cover_image_url": {
-          "name": "cover_image_url",
+        "cover_image": {
+          "name": "cover_image",
           "type": "text",
           "primaryKey": false,
           "notNull": true,
