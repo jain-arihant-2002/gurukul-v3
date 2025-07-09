@@ -1,4 +1,4 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
@@ -115,9 +115,14 @@ export const fulfillCoursePurchase = cache(
             console.error("Course not found in fulfillCoursePurchase:", courseId);
             return { success: false, error: "Course not found." };
         }
-        if(course.price !== amount) 
+        if (course.price !== amount)
             return { success: false, error: "Price mismatch." };
-
+        
+        const isEnrolled = await checkUserEnrollment(userId, courseId);
+        if (isEnrolled) {
+            console.error("User is already enrolled in the course:", courseId);
+            return { success: false, error: "User is already enrolled in this course." };
+        }
 
         const result = await fulfillCoursePurchaseInDb(userId, courseId, amount);
         if (result.error) {
@@ -127,3 +132,14 @@ export const fulfillCoursePurchase = cache(
         return { success: true, error: null };
     }
 );
+
+
+// Function to check if a user is enrolled in a course
+export const checkUserEnrollment = cache(async (userId: string, courseId: string) => {
+    const enrollment = await getEnrollmentForUserAndCourseFromDb(userId, courseId);
+    if (enrollment.error) {
+        console.error("DAL Error in checkUserEnrollment:", enrollment.error);
+        return null;
+    }
+    return enrollment.data;
+});

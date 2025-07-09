@@ -10,6 +10,7 @@ import { getCourseBySlug } from "@/lib/dal";
 import { Star, Users, Globe, Clock, CheckCircle, BookOpen, AlertCircle, Calendar } from "lucide-react";
 import CourseStatusBadge from "./_components/CourseDetailBtn";
 import PurchaseButton from "@/app/(main)/courses/[slug]/_components/PurchaseButton";
+import CourseActionPanel from "./_components/CourseActionPanel";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -162,9 +163,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </Card>
 
           {/* Purchase Button */}
-            {/* todo make this page go to dashboard if course is purchased */}
+          {/* todo make this page go to dashboard if course is purchased */}
           <div className="mt-6 flex flex-col gap-2">
-            <PurchaseButton courseId={course.id} price={course.price} />
+            <CourseActionPanel courseId={course.id} courseSlug={course.slug} price={course.price} />
           </div>
 
           {/* Course Management - Now handled by client component */}

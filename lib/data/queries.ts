@@ -529,3 +529,17 @@ export const fulfillCoursePurchaseInDb = async (
 
     return { data: data, error: null, status: 200 };
 };
+
+export const getEnrollmentForUserAndCourseFromDb = async (userId: string, courseId: string) => {
+  return await tryCatch(
+    db.query.enrollments.findFirst({
+      where: and(
+        eq(enrollments.userId, userId),
+        eq(enrollments.courseId, courseId)
+      ),
+      columns: {
+        id: true, // We only need to know if it exists, so fetching the ID is enough
+      },
+    })
+  );
+};
