@@ -1,1 +1,0 @@
-ALTER TABLE "courses" RENAME COLUMN "cover_image_url" TO "cover_image";

@@ -1,4 +1,4 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
@@ -104,3 +104,26 @@ export const getInstructorById = async (id: string) => {
         throw new Error("Instructor not found");
     return instructor;
 }
+
+export const fulfillCoursePurchase = cache(
+
+
+    async (userId: string, courseId: string, amount: string) => {
+
+        const course = await getCourseByIdFromDb(courseId);
+        if (!course) {
+            console.error("Course not found in fulfillCoursePurchase:", courseId);
+            return { success: false, error: "Course not found." };
+        }
+        if(course.price !== amount) 
+            return { success: false, error: "Price mismatch." };
+
+
+        const result = await fulfillCoursePurchaseInDb(userId, courseId, amount);
+        if (result.error) {
+            console.error("DAL Error in fulfillCoursePurchase:", result.error);
+            return { success: false, error: "Failed to fulfill purchase." };
+        }
+        return { success: true, error: null };
+    }
+);

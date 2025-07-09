@@ -1,6 +1,6 @@
 "use server";
 import { getAuth } from "@/lib/auth/session";
-import { createCourse, getCourseById, updateCourse } from "@/lib/dal";
+import { createCourse, fulfillCoursePurchase, getCourseById, updateCourse } from "@/lib/dal";
 import { ApiResponse, ApiResponses } from "@/utils/apiResponse";
 import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
 import { revalidatePath } from "next/cache";
@@ -44,7 +44,7 @@ export async function createCourseAction(formData: CourseFormData) {
         return ApiResponse(result.data, result.status, result.error)
     }
     revalidatePath("/courses", "layout");
-    
+
     if (result.data?.status === 'published')
         revalidatePath('/instructors', 'layout');
 
@@ -99,4 +99,19 @@ export async function updateCourseAction(formData: CourseFormData) {
     revalidatePath("/instructors", "layout");
 
     return ApiResponse(result.data, 200, "Course created successfully");
+}
+
+export async function freeCoursePurchaseAction(courseId: string) {
+    const { user } = await getAuth();
+    if (!user)
+        return ApiResponses.unauthorized("You must be logged in to purchase a course");
+
+    const result = await fulfillCoursePurchase(user.id, courseId, '0.00');
+
+    if (result.error)
+        return ApiResponses.internalServerError();
+    revalidatePath(`/courses`, 'layout');
+    return ApiResponses.success(null, "Course purchased successfully");
+
+
 }

@@ -1,6 +1,7 @@
 CREATE TYPE "public"."course_level" AS ENUM('beginner', 'intermediate', 'advanced', 'all-levels');--> statement-breakpoint
 CREATE TYPE "public"."course_status" AS ENUM('draft', 'published', 'archived');--> statement-breakpoint
 CREATE TYPE "public"."lecture_type" AS ENUM('video', 'article', 'quiz');--> statement-breakpoint
+CREATE TYPE "public"."payment_status" AS ENUM('completed', 'pending', 'failed');--> statement-breakpoint
 CREATE TYPE "public"."social_platform" AS ENUM('twitter', 'linkedin', 'github', 'website');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('user', 'admin', 'instructor');--> statement-breakpoint
 CREATE TABLE "account" (
@@ -25,7 +26,7 @@ CREATE TABLE "courses" (
 	"title" text NOT NULL,
 	"short_description" text NOT NULL,
 	"long_description_html" text NOT NULL,
-	"cover_image_url" text DEFAULT '' NOT NULL,
+	"cover_image" text DEFAULT '' NOT NULL,
 	"rating" numeric(2, 1) DEFAULT '0.0' NOT NULL,
 	"enrollment_count" integer DEFAULT 0 NOT NULL,
 	"price" numeric(10, 2) DEFAULT '0.00' NOT NULL,
@@ -72,6 +73,15 @@ CREATE TABLE "lectures" (
 	"video_url" text,
 	"article_content_html" text,
 	"section_id" text NOT NULL
+);
+--> statement-breakpoint
+CREATE TABLE "purchases" (
+	"id" text PRIMARY KEY NOT NULL,
+	"user_id" text NOT NULL,
+	"course_id" text NOT NULL,
+	"purchased_at" timestamp DEFAULT now() NOT NULL,
+	"amount" numeric(10, 2) NOT NULL,
+	"payment_status" "payment_status" DEFAULT 'completed' NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "quizzes" (
@@ -136,7 +146,10 @@ ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_user_id_user_id_fk" FOREIG
 ALTER TABLE "enrollments" ADD CONSTRAINT "enrollments_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "instructors" ADD CONSTRAINT "instructors_id_user_id_fk" FOREIGN KEY ("id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "lectures" ADD CONSTRAINT "lectures_section_id_sections_id_fk" FOREIGN KEY ("section_id") REFERENCES "public"."sections"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "purchases" ADD CONSTRAINT "purchases_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "purchases" ADD CONSTRAINT "purchases_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "quizzes" ADD CONSTRAINT "quizzes_lecture_id_lectures_id_fk" FOREIGN KEY ("lecture_id") REFERENCES "public"."lectures"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "sections" ADD CONSTRAINT "sections_course_id_courses_id_fk" FOREIGN KEY ("course_id") REFERENCES "public"."courses"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-CREATE UNIQUE INDEX "unique_enrollment_idx" ON "enrollments" USING btree ("user_id","course_id");
+CREATE UNIQUE INDEX "unique_enrollment_idx" ON "enrollments" USING btree ("user_id","course_id");--> statement-breakpoint
+CREATE UNIQUE INDEX "unique_purchase_idx" ON "purchases" USING btree ("user_id","course_id");

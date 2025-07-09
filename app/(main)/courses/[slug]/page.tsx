@@ -9,6 +9,7 @@ import VideoPlayerModalWrapper from "@/components/VideoPlayerModal";
 import { getCourseBySlug } from "@/lib/dal";
 import { Star, Users, Globe, Clock, CheckCircle, BookOpen, AlertCircle, Calendar } from "lucide-react";
 import CourseStatusBadge from "./_components/CourseDetailBtn";
+import PurchaseButton from "@/app/(main)/courses/[slug]/_components/PurchaseButton";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -161,20 +162,9 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </Card>
 
           {/* Purchase Button */}
+            {/* todo make this page go to dashboard if course is purchased */}
           <div className="mt-6 flex flex-col gap-2">
-            <Button className="w-full text-lg font-semibold">
-              {course.price === 0 ? (
-                <span className="flex items-center gap-2">
-                  <CheckCircle className="w-5 h-5" />
-                  Enroll for Free
-                </span>
-              ) : (
-                <span>
-                  Buy Course &nbsp;
-                  <span className="font-bold">${course.price}</span>
-                </span>
-              )}
-            </Button>
+            <PurchaseButton courseId={course.id} price={course.price} />
           </div>
 
           {/* Course Management - Now handled by client component */}
@@ -327,6 +317,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           </div>
         </div>
       </div>
-    </section>
+    </section >
   );
 }

@@ -1,9 +1,10 @@
 import { cache } from "react";
-import { courses, instructors, lectures, sections, user } from "@/db/schema";
+import { courses, enrollments, instructors, lectures, purchases, sections, user } from "@/db/schema";
 import { db } from "../../db/db";
 import { CourseCard, CourseDetails, CourseLevel, CreateCourseDbInput, InstructorCard, InstructorDetails, LectureType } from "@/utils/types";
 import { and, count, desc, eq, gt, sql } from "drizzle-orm";
 import { tryCatch } from "@/utils/trycatch";
+import { nanoid } from "nanoid";
 
 export const getPublishedCourseCardFromDb = cache(async (options: { limit?: number, offset?: number }): Promise<CourseCard[]> => {
     const { limit, offset } = options;
@@ -486,3 +487,45 @@ export const getInstructorByIdFromDb = cache(async (id: string) => {
 
     return { data: data[0] || null, error: null, status: 200 };
 });
+
+export const fulfillCoursePurchaseInDb = async (
+    userId: string,
+    courseId: string,
+    amount: string
+) => {
+
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            // 1. Create the purchase record
+            await tx.insert(purchases).values({
+                id: `purch_${nanoid()}`, // as we are only add entry in purchases here.
+                userId,
+                courseId,
+                amount: amount,
+                paymentStatus: "completed",
+            });
+
+            // 2. Create the enrollment record
+            await tx.insert(enrollments).values({
+                id: `enrl_${nanoid()}`,
+                userId,
+                courseId,
+            });
+
+            // 3. Increment the enrollment count on the course
+            await tx
+                .update(courses)
+                .set({ enrollmentCount: sql`${courses.enrollmentCount} + 1` })
+                .where(eq(courses.id, courseId));
+
+            // We don't need to return anything on success,
+            // the transaction will throw an error if anything fails.
+            return { success: true };
+        })
+    );
+
+    if (!data)
+        return { data: null, error: 'Failed to add course in db', status: 500 };
+
+    return { data: data, error: null, status: 200 };
+};

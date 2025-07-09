@@ -29,6 +29,7 @@ export const courseStatusEnum = pgEnum("course_status", ["draft", "published", "
 export const courseLevelEnum = pgEnum("course_level", ["beginner", "intermediate", "advanced", "all-levels"]);
 export const lectureTypeEnum = pgEnum("lecture_type", ["video", "article", "quiz"]);
 export const socialPlatformEnum = pgEnum("social_platform", ["twitter", "linkedin", "github", "website"]);
+export const paymentStatusEnum = pgEnum("payment_status", ["completed", "pending", "failed"]);
 
 
 // =================================================================
@@ -183,6 +184,19 @@ export const enrollments = pgTable("enrollments", {
 }, (table) => ({
   uniqueEnrollment: uniqueIndex("unique_enrollment_idx").on(table.userId, table.courseId),
 }));
+/**
+ * Purschases table to track user purchases.
+ */
+export const purchases = pgTable("purchases", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => user.id, { onDelete: "cascade" }),
+  courseId: text("course_id").notNull().references(() => courses.id, { onDelete: "cascade" }),
+  purchasedAt: timestamp("purchased_at").defaultNow().notNull(),
+  amount: decimal("amount", { precision: 10, scale: 2 }).notNull(),
+  paymentStatus: paymentStatusEnum("payment_status").default("completed").notNull(), // e.g. completed, pending, failed
+}, (table) => ({
+  uniquePurchase: uniqueIndex("unique_purchase_idx").on(table.userId, table.courseId),
+}));
 
 
 // =================================================================
@@ -263,6 +277,17 @@ export const enrollmentsRelations = relations(enrollments, ({ one }) => ({
   }),
   course: one(courses, {
     fields: [enrollments.courseId],
+    references: [courses.id],
+  }),
+}));
+
+export const purchasesRelations = relations(purchases, ({ one }) => ({
+  user: one(user, {
+    fields: [purchases.userId],
+    references: [user.id],
+  }),
+  course: one(courses, {
+    fields: [purchases.courseId],
     references: [courses.id],
   }),
 }));
