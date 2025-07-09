@@ -26,7 +26,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Plus, X, Loader2 } from "lucide-react";
-import type {  SocialLink } from "@/utils/types";
+import type { SocialLink } from "@/utils/types";
+import { useAuth } from "@/lib/auth/use-session";
+import { useRouter } from "next/navigation";
 
 // Extract platform type from SocialLink
 type SocialPlatform = SocialLink["platform"];
@@ -53,15 +55,21 @@ type InstructorFormProps = {
   isSubmitting: boolean;
 };
 
-export default function InstructorForm({ 
-  mode = 'create', 
-  initialData, 
-  onSubmit, 
-  isSubmitting 
+export default function InstructorForm({
+  mode = 'create',
+  initialData,
+  onSubmit,
+  isSubmitting
 }: InstructorFormProps) {
+  const { user } = useAuth()
+  const router = useRouter();
+
   const [expertiseInput, setExpertiseInput] = useState("");
   const [socialPlatform, setSocialPlatform] = useState<SocialPlatform>("twitter");
   const [socialUrl, setSocialUrl] = useState("");
+
+  if (!user)
+    router.push('/sign-in');
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),
@@ -120,7 +128,7 @@ export default function InstructorForm({
             {mode === 'create' ? 'Become an Instructor' : 'Edit Instructor Profile'}
           </h1>
           <p className="text-muted-foreground">
-            {mode === 'create' 
+            {mode === 'create'
               ? 'Fill in your profile information to start teaching on our platform. All fields marked with * are required.'
               : 'Update your instructor profile information below.'
             }
@@ -142,10 +150,10 @@ export default function InstructorForm({
                     <FormItem>
                       <FormLabel htmlFor="instructor-headline">Professional Headline *</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           id="instructor-headline"
-                          placeholder="e.g. Senior Frontend Engineer & React Expert" 
-                          {...field} 
+                          placeholder="e.g. Senior Frontend Engineer & React Expert"
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -164,11 +172,11 @@ export default function InstructorForm({
                     <FormItem>
                       <FormLabel htmlFor="instructor-bio">Bio *</FormLabel>
                       <FormControl>
-                        <Textarea 
+                        <Textarea
                           id="instructor-bio"
                           placeholder="Tell us about yourself, your experience, and what you're passionate about teaching..."
                           className="min-h-[120px]"
-                          {...field} 
+                          {...field}
                         />
                       </FormControl>
                       <FormDescription>
@@ -271,10 +279,10 @@ export default function InstructorForm({
                         {form.watch("socialLinks")?.map((link) => (
                           <Badge key={link.platform} variant="outline" className="flex items-center gap-2">
                             <span className="capitalize">{link.platform}</span>
-                            <a 
-                              href={link.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer" 
+                            <a
+                              href={link.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
                               className="text-sm text-muted-foreground hover:text-foreground underline truncate max-w-32"
                             >
                               {link.url.replace(/^https?:\/\//, '')}
@@ -301,8 +309,8 @@ export default function InstructorForm({
 
                 {/* Submit Button */}
                 <div className="flex gap-4 pt-4">
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={isSubmitting}
                     className="flex-1"
                   >

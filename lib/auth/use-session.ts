@@ -5,7 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import { UserRole } from "@/utils/types";
 
 export function useAuth() {
-    const { data: session, isPending, error } = authClient.useSession();
+    const { data: session, isPending, error,refetch } = authClient.useSession();
 
     const user = session?.user ?? null;
     const isAuthenticated = !!user;
@@ -23,6 +23,7 @@ export function useAuth() {
         isAuthenticated,
         isPending,
         error,
+        refetch,
         ...permissions,
     };
 }

@@ -71,7 +71,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
         {/* Left section: sticky on scroll */}
         <div className="md:w-1/3 flex-shrink-0 md:sticky md:top-8 self-start">
           <img
-            src={course?.coverImage || "/placeholder-course-cover.jpg"}
+            src={course?.coverImage || "/placeholder-image.png"}
             alt={course.title}
             className="w-full h-56 object-cover rounded-lg shadow"
           />
