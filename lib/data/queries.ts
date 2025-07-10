@@ -543,3 +543,39 @@ export const getEnrollmentForUserAndCourseFromDb = async (userId: string, course
     })
   );
 };
+
+
+export const getLectureWithCourseIdFromDb = cache(async (lectureId: string) => {
+    const { data, error } = await tryCatch(
+        db.query.lectures.findFirst({
+            where: eq(lectures.id, lectureId),
+            columns: {
+                id: true,
+                videoUrl: true,
+                isFreePreview: true,
+                sectionId: true
+            },
+            with: {
+                section: {
+                    columns: {
+                        courseId: true
+                    }
+                }
+            }
+        })
+    );
+
+    if (error || !data || !data.section) {
+        if (error) console.error("Error fetching lecture:", error);
+        return { data: null, error: "Lecture not found or course link missing." };
+    }
+
+    const result = {
+        id: data.id,
+        videoUrl: data.videoUrl,
+        isFreePreview: data.isFreePreview,
+        courseId: data.section.courseId,
+    };
+
+    return { data: result, error: null };
+});

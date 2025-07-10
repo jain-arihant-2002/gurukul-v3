@@ -12,6 +12,9 @@ export const env = createEnv({
         GOOGLE_CLIENT_SECRET: z.string().min(1, "GOOGLE_CLIENT_ID must be a valid string"),
         STRIPE_SECRET_KEY: z.string().min(1, "STRIPE_SECRET_KEY is required."),
         STRIPE_WEBHOOK_SECRET: z.string().min(1, "STRIPE_WEBHOOK_SECRET is required."),
+        CLOUDINARY_CLOUD_NAME: z.string().min(1, "CLOUDINARY_CLOUD_NAME is required."),
+        CLOUDINARY_API_KEY: z.string().min(1, "CLOUDINARY_API_KEY is required."),
+        CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required."),
     },
     client: {
         NEXT_PUBLIC_APP_URL: z.string().url().min(1, "NEXT_PUBLIC_APP_URL must be a valid URL"),

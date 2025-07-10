@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.1.1",
+    "@mux/mux-player-react": "^3.5.1",
     "@neondatabase/serverless": "^1.0.1",
     "@radix-ui/react-accordion": "^1.2.11",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -39,6 +40,7 @@
     "@tiptap/starter-kit": "^2.24.2",
     "better-auth": "^1.2.12",
     "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.7.0",
     "clsx": "^2.1.1",
     "drizzle-orm": "^0.44.2",
     "lucide-react": "^0.525.0",
