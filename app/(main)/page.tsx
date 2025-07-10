@@ -3,7 +3,6 @@ import ChooseUs from "./_component/ChooseUs";
 import Hero from "./_component/HeroSection";
 import InstructorList from "./_component/InstructorList";
 import { getCoursesCard, getInstructorCard } from '@/lib/dal';
-import { cleanupData, seedDatabaseWithAllFields, seedDatabaseWithOnlyRequiredFields } from '@/db/testing_db_query';
 
 
 export default async function Home() {
@@ -11,9 +10,7 @@ export default async function Home() {
   const Instructors = await getInstructorCard({ limit: 4 });
 
   console.time("blockingTask");
-  // cleanupData()
-  // seedDatabaseWithOnlyRequiredFields()
-  // seedDatabaseWithAllFields()
+  
   console.timeEnd("blockingTask");
   // Todo: Add a loading state or skeleton while fetching data or add logic for suspense
   return (

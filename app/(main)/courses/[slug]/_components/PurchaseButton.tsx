@@ -85,7 +85,6 @@ export default function PurchaseButton({ courseId, price }: PurchaseButtonProps)
       return;
     }
     setIsLoading(true);
-    toast.loading("Redirecting to checkout...");
 
     try {
       const result = await freeCoursePurchaseAction(courseId)

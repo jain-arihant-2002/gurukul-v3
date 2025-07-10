@@ -23,6 +23,7 @@ const courseSchema = z.object({
     whatWillYouLearn: z.array(z.string()).min(1, "At least one learning outcome is required"),
     prerequisites: z.array(z.string()).optional(),
     coverImage: z.string().optional(),
+    totalDurationHours: z.number().min(0, "Total duration must be at least 0"),
 });
 
 export async function createCourseAction(formData: CourseFormData) {

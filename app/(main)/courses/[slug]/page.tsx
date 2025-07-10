@@ -9,7 +9,6 @@ import VideoPlayerModalWrapper from "@/components/VideoPlayerModal";
 import { getCourseBySlug } from "@/lib/dal";
 import { Star, Users, Globe, Clock, CheckCircle, BookOpen, AlertCircle, Calendar } from "lucide-react";
 import CourseStatusBadge from "./_components/CourseDetailBtn";
-import PurchaseButton from "@/app/(main)/courses/[slug]/_components/PurchaseButton";
 import CourseActionPanel from "./_components/CourseActionPanel";
 
 function formatDate(dateString: string) {
@@ -64,8 +63,8 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
     );
   }
 
-  // Show max 5 sections unless "Show More" is clicked (handled client-side if needed)
-  const visibleSections = course.sections.slice(0, 5);
+  const visibleSections = course.sections
+  // .slice(0, 5);
 
   return (
     <section className="w-[80%] mx-auto my-12">

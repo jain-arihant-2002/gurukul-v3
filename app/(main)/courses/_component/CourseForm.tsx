@@ -31,6 +31,7 @@ import { Loader2, X, Upload, Plus, ImageIcon, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { convertImageToBase64 } from "@/utils/helperFunctions";
 import { CourseLevel, CourseStatus } from "@/utils/types";
+import Link from "next/link";
 
 // Zod schema for course creation
 const courseSchema = z.object({
@@ -50,13 +51,14 @@ const courseSchema = z.object({
     whatWillYouLearn: z.array(z.string()).min(1, "At least one learning outcome is required"),
     prerequisites: z.array(z.string()).optional(),
     coverImage: z.string().optional(),
+    totalDurationHours: z.number().min(0, "Total duration must be at least 0"),
 });
 
 type CourseFormData = z.infer<typeof courseSchema>;
 
 interface CourseFormProps {
     mode: 'create' | 'edit';
-    initialData?: Partial<CourseFormData>;
+    initialData?: (Partial<CourseFormData> & { id?: string });
     onSubmit: (data: CourseFormData) => Promise<void>;
     isSubmitting: boolean;
 }
@@ -333,9 +335,6 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                                         }}
                                                     />
                                                 </FormControl>
-                                                <FormDescription>
-                                                    URL-friendly version of the title
-                                                </FormDescription>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
@@ -385,8 +384,99 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     )}
                                 />
 
-                                {/* Price, Language, Level */}
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Price, Language, Level, Duration, Status */}
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                                    <FormField
+                                        control={form.control}
+                                        name="status"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel htmlFor="course-status">Status *</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger id="course-status" className="w-full">
+                                                            <SelectValue placeholder="Select status" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="draft">Draft</SelectItem>
+                                                        <SelectItem value="published">Published</SelectItem>
+                                                        {mode === 'edit' && <SelectItem value="archived">Archived</SelectItem>}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    
+                                    <FormField
+                                        control={form.control}
+                                        name="language"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel htmlFor="course-language">Language *</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger id="course-language"  className="w-full">
+                                                            <SelectValue placeholder="Select language" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="English">English</SelectItem>
+                                                        <SelectItem value="Spanish">Spanish</SelectItem>
+                                                        <SelectItem value="French">French</SelectItem>
+                                                        <SelectItem value="German">German</SelectItem>
+                                                        <SelectItem value="Hindi">Hindi</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="level"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel htmlFor="course-level">Course Level *</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger id="course-level"  className="w-full">
+                                                            <SelectValue placeholder="Select level" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent>
+                                                        <SelectItem value="beginner">Beginner</SelectItem>
+                                                        <SelectItem value="intermediate">Intermediate</SelectItem>
+                                                        <SelectItem value="advanced">Advanced</SelectItem>
+                                                        <SelectItem value="all-levels">All Levels</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={form.control}
+                                        name="totalDurationHours"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel htmlFor="course-total-duration">Total Course Time (hours)</FormLabel>
+                                                <FormControl>
+                                                    <Input
+                                                        id="course-total-duration"
+                                                        type="number"
+                                                        min={0}
+                                                        step={0.1}
+                                                        placeholder="e.g. 5.5"
+                                                        {...field}
+                                                    />
+                                                </FormControl>  
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
                                     <FormField
                                         control={form.control}
                                         name="price"
@@ -407,80 +497,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                             </FormItem>
                                         )}
                                     />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="language"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel htmlFor="course-language">Language *</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger id="course-language">
-                                                            <SelectValue placeholder="Select language" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="English">English</SelectItem>
-                                                        <SelectItem value="Spanish">Spanish</SelectItem>
-                                                        <SelectItem value="French">French</SelectItem>
-                                                        <SelectItem value="German">German</SelectItem>
-                                                        <SelectItem value="Hindi">Hindi</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
-
-                                    <FormField
-                                        control={form.control}
-                                        name="level"
-                                        render={({ field }) => (
-                                            <FormItem>
-                                                <FormLabel htmlFor="course-level">Course Level *</FormLabel>
-                                                <Select onValueChange={field.onChange} value={field.value}>
-                                                    <FormControl>
-                                                        <SelectTrigger id="course-level">
-                                                            <SelectValue placeholder="Select level" />
-                                                        </SelectTrigger>
-                                                    </FormControl>
-                                                    <SelectContent>
-                                                        <SelectItem value="beginner">Beginner</SelectItem>
-                                                        <SelectItem value="intermediate">Intermediate</SelectItem>
-                                                        <SelectItem value="advanced">Advanced</SelectItem>
-                                                        <SelectItem value="all-levels">All Levels</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
-                                                <FormMessage />
-                                            </FormItem>
-                                        )}
-                                    />
                                 </div>
-
-                                {/* Status */}
-                                <FormField
-                                    control={form.control}
-                                    name="status"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel htmlFor="course-status">Status *</FormLabel>
-                                            <Select onValueChange={field.onChange} value={field.value}>
-                                                <FormControl>
-                                                    <SelectTrigger id="course-status" className="w-full md:w-48">
-                                                        <SelectValue placeholder="Select status" />
-                                                    </SelectTrigger>
-                                                </FormControl>
-                                                <SelectContent>
-                                                    <SelectItem value="draft">Draft</SelectItem>
-                                                    <SelectItem value="published">Published</SelectItem>
-                                                    {mode === 'edit' && <SelectItem value="archived">Archived</SelectItem>}
-                                                </SelectContent>
-                                            </Select>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
 
                                 {/* Cover Image with Preview */}
                                 <FormField
@@ -615,7 +632,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                                 </Button>
                                             </div>
                                             <div className="flex flex-wrap gap-2">
-                                                {field.value.map((category, index) => (
+                                                {(Array.isArray(field.value) ? field.value : []).map((category, index) => (
                                                     <Badge key={index} variant="secondary" className="text-sm">
                                                         {category}
                                                         <Button
@@ -664,7 +681,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                                 </Button>
                                             </div>
                                             <div className="space-y-2">
-                                                {field.value.map((outcome, index) => (
+                                                {Array.isArray(field.value) ? field.value.map((outcome, index) => (
                                                     <div key={index} className="flex items-center gap-2 p-2 bg-muted rounded">
                                                         <span className="flex-1">{outcome}</span>
                                                         <Button
@@ -676,7 +693,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                                             <X className="h-4 w-4" />
                                                         </Button>
                                                     </div>
-                                                ))}
+                                                )) : null}
                                             </div>
                                             <FormMessage />
                                         </FormItem>
@@ -733,6 +750,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
 
                                 {/* Submit Button */}
                                 <div className="flex justify-end gap-4 pt-6">
+
                                     <Button
                                         type="button"
                                         variant="outline"
@@ -741,6 +759,17 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                     >
                                         {mode === 'create' ? 'Reset Form' : 'Reset Changes'}
                                     </Button>
+
+                                    {/* Manage Sections & Lectures Button (shown only in edit mode) */}
+                                    {mode === "edit" && initialData?.slug && initialData?.id && (
+                                        <Button asChild variant="outline">
+                                            <Link
+                                                href={`/courses/create/section?courseId=${initialData.id}&courseSlug=${initialData.slug}`}
+                                            >
+                                                Manage Sections & Lectures
+                                            </Link>
+                                        </Button>
+                                    )}
                                     <Button type="submit" disabled={isSubmitting}>
                                         {isSubmitting ? (
                                             <>
@@ -756,6 +785,8 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                         </Form>
                     </CardContent>
                 </Card>
+
+
             </div>
         </div>
     );

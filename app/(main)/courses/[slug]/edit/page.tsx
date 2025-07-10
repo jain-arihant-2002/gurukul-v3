@@ -39,6 +39,7 @@ export default async function EditCoursePage({ params }: { params: Promise<{ slu
         prerequisites: course.prerequisites || [],
         coverImage: course.coverImage || "",
         createdAt:course.createdAt ? new Date(course.createdAt) : undefined,
+        authorId: course.authorId,
     };
 
     return <EditCourseClient initialData={formData} />;

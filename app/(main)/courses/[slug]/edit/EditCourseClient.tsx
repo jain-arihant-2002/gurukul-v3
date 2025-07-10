@@ -1,16 +1,29 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import CourseForm from "../../_component/CourseForm";
 import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
 import { updateCourseAction } from "../../_actions/action";
+import { useAuth } from "@/lib/auth/use-session";
 
 
 export default function EditCourseClient({ initialData }: { initialData: CourseFormData }) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const router = useRouter();
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user && user.id !== initialData.authorId) {
+            toast.error("You do not have permission to edit this course.");
+            router.push(`/courses/${initialData.slug}`);
+        }
+    }, [user, initialData.authorId, initialData.slug, router]);
+
+    if (user && user.id !== initialData.authorId) {
+        return null;
+    }
 
     const handleSubmit = async (data: any) => {
         setIsSubmitting(true);

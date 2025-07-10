@@ -143,6 +143,7 @@ export type CourseCard = {
   id: string;
   slug: string;
   title: string;
+  status?: CourseStatus;
   coverImage: string | null;
   categories: string[];
   price: number;
@@ -288,6 +289,7 @@ export type CourseFormData = {
   prerequisites?: string[];
   coverImage?: string;
   createdAt?: Date; // used for updated courses
+  authorId: string; 
 };
 
 export type CreateCourseDbInput = {

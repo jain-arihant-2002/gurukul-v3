@@ -12,6 +12,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
   const { username } = await params;
 
   const instructor = await getInstructorByUsername(username);
+  console.log("Instructor Data:", instructor);
   if (!instructor) {
     return (
       <div className="min-h-screen bg-background">
@@ -35,8 +36,9 @@ export default async function InstructorDetailPage({ params }: { params: Promise
     }, {} as Record<string, string>)
     : {};
 
-  // Calculate total students across all courses
-  const totalStudents = instructor.courses?.reduce((acc, course) => acc + (course.enrollmentCount || 0), 0) || 0;
+  // Calculate total students across all published courses only
+  const publishedCourses = instructor.courses?.filter(course => course.status === 'published') || [];
+  const totalStudents = publishedCourses.reduce((acc, course) => acc + (course.enrollmentCount || 0), 0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -116,7 +118,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                       <Card className="text-center">
                         <CardContent className="pt-4 pb-4">
                           <BookOpen className="w-6 h-6 text-primary mx-auto mb-2" />
-                          <p className="text-2xl font-bold text-primary">{instructor.coursesCount || instructor.courses?.length || 0}</p>
+                        <p className="text-2xl font-bold text-primary">{instructor.coursesCount}</p>
                           <p className="text-sm text-muted-foreground">Courses</p>
                         </CardContent>
                       </Card>
@@ -181,16 +183,16 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                 <h2 className="text-3xl font-bold">Courses by {instructor.name}</h2>
               </div>
               <div className="pl-7">
-                {(instructor.courses).length > 0 ? (
+                {publishedCourses.length > 0 ? (
                   <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-                    {instructor.courses.map((course, idx) => (
+                    {publishedCourses.map((course, idx) => (
                       <CourseCard key={course.id || idx} course={course} />
                     ))}
                   </div>
                 ) : (
                   <div className="text-center py-16">
                     <BookOpen className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold text-muted-foreground mb-2">No Courses Yet</h3>
+                    <h3 className="text-xl font-semibold text-muted-foreground mb-2">No Published Courses Yet</h3>
                     <p className="text-muted-foreground">
                       {instructor.name} hasn't published any courses yet. Check back later for new content!
                     </p>

@@ -33,7 +33,7 @@ const RegisterTeacherPage = () => {
             } else {
                 //maybe this is causing race condition needs more testing
                 refetch(); //So that the session is updated with the new instructor role
-                console.log('User', user)
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for session to update
                 toast.success("Instructor profile created successfully!");
                 router.push('/courses/create');
             }

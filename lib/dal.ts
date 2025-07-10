@@ -1,4 +1,4 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb, createSectionsAndLecturesInDb, getSectionsAndLecturesByCourseIdFromDb, upsertSectionsAndLecturesInDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
@@ -117,7 +117,7 @@ export const fulfillCoursePurchase = cache(
         }
         if (course.price !== amount)
             return { success: false, error: "Price mismatch." };
-        
+
         const isEnrolled = await checkUserEnrollment(userId, courseId);
         if (isEnrolled) {
             console.error("User is already enrolled in the course:", courseId);
@@ -146,4 +146,31 @@ export const checkUserEnrollment = cache(async (userId: string, courseId: string
 
 export const getLectureWithCourseId = cache(async (lectureId: string) => {
     return await getLectureWithCourseIdFromDb(lectureId);
+});
+
+export async function createSectionsAndLecturesDAL(courseId: string, sectionsInput: any[]) {
+    return await createSectionsAndLecturesInDb(courseId, sectionsInput);
+}
+export const getSectionsAndLecturesByCourseId = cache(async (courseId: string) => {
+  return await getSectionsAndLecturesByCourseIdFromDb(courseId);
+});
+
+export const upsertSectionsAndLecturesDAL = cache(async (courseId: string, sectionsInput: any[]) => {
+  try {
+    // Validate courseId
+    if (!courseId || typeof courseId !== "string") {
+      return { success: false, error: "Valid course ID is required" };
+    }
+
+    // Validate sections input
+    if (!sectionsInput || !Array.isArray(sectionsInput) || sectionsInput.length === 0) {
+      return { success: false, error: "At least one section is required" };
+    }
+
+    const result = await upsertSectionsAndLecturesInDb(courseId, sectionsInput);
+    return result;
+  } catch (error) {
+    console.error("DAL Error in upsertSectionsAndLecturesDAL:", error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
 });

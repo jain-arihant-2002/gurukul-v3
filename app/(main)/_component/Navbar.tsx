@@ -9,10 +9,12 @@ import { authClient } from "@/lib/auth-client";
 import { toast } from "sonner";
 import UserDropDown from "@/components/user-dropdown";
 import { useAuth } from "@/lib/auth/use-session";
+import { useRouter } from "next/navigation";
 
 export function Navbar() {
-    const {session} = useAuth()
-    
+    const router = useRouter()
+    const { session } = useAuth()
+
     const logOut = async () => {
         await authClient.signOut({
             fetchOptions: {
@@ -21,6 +23,7 @@ export function Navbar() {
                 },
             },
         });
+        router.push("/");
     };
 
     // --- Navbar Links ---

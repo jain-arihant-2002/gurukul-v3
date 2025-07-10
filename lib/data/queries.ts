@@ -1,8 +1,8 @@
 import { cache } from "react";
 import { courses, enrollments, instructors, lectures, purchases, sections, user } from "@/db/schema";
 import { db } from "../../db/db";
-import { CourseCard, CourseDetails, CourseLevel, CreateCourseDbInput, InstructorCard, InstructorDetails, LectureType } from "@/utils/types";
-import { and, count, desc, eq, gt, sql } from "drizzle-orm";
+import { CourseCard, CourseDetails, CourseLevel, CourseStatus, CreateCourseDbInput, InstructorCard, InstructorDetails, LectureType } from "@/utils/types";
+import { and, asc, count, desc, eq, gt, sql } from "drizzle-orm";
 import { tryCatch } from "@/utils/trycatch";
 import { nanoid } from "nanoid";
 
@@ -211,7 +211,8 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
                                 updatedAt: true,
                                 createdAt: true,
                                 enrollmentCount: true,
-                                shortDescription: true
+                                shortDescription: true,
+                                status: true
                             }
                         }
                     }
@@ -237,6 +238,7 @@ export const getInstructorByUsernameFromDb = cache(async (username: string): Pro
             updatedAt: course.updatedAt instanceof Date ? course.updatedAt.toISOString() : course.updatedAt,
             createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : course.createdAt,
             level: course.level as CourseLevel, // Cast to CourseLevel type
+            status: course.status as CourseStatus, // Cast to CourseStatus type
         })),
         username: userData.username,
         name: userData.name,
@@ -276,6 +278,7 @@ export const createCourseInDb = cache(async (courseData: CreateCourseDbInput) =>
                     ? courseData.price.toFixed(2)
                     : courseData.price
             }).returning();
+            console.log("inserted course", inserted);
 
             // If published, increment instructor's coursesCount
             if (inserted[0]?.status === "published") {
@@ -531,17 +534,17 @@ export const fulfillCoursePurchaseInDb = async (
 };
 
 export const getEnrollmentForUserAndCourseFromDb = async (userId: string, courseId: string) => {
-  return await tryCatch(
-    db.query.enrollments.findFirst({
-      where: and(
-        eq(enrollments.userId, userId),
-        eq(enrollments.courseId, courseId)
-      ),
-      columns: {
-        id: true, // We only need to know if it exists, so fetching the ID is enough
-      },
-    })
-  );
+    return await tryCatch(
+        db.query.enrollments.findFirst({
+            where: and(
+                eq(enrollments.userId, userId),
+                eq(enrollments.courseId, courseId)
+            ),
+            columns: {
+                id: true, // We only need to know if it exists, so fetching the ID is enough
+            },
+        })
+    );
 };
 
 
@@ -579,3 +582,195 @@ export const getLectureWithCourseIdFromDb = cache(async (lectureId: string) => {
 
     return { data: result, error: null };
 });
+
+export async function createSectionsAndLecturesInDb(courseId: string, sectionsInput: any[]) {
+
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            for (const section of sectionsInput) {
+                const sectionId = section.id || `section_${nanoid()}`;
+                await tx.insert(sections).values({
+                    id: sectionId,
+                    title: section.title,
+                    description: section.description,
+                    order: section.order,
+                    courseId,
+                });
+
+                for (const lecture of section.lectures) {
+                    await tx.insert(lectures).values({
+                        id: lecture.id || `lecture_${nanoid()}`,
+                        title: lecture.title,
+                        order: lecture.order,
+                        type: lecture.type,
+                        isFreePreview: lecture.isFreePreview,
+                        videoUrl: lecture.videoUrl,
+                        articleContentHtml: lecture.articleContentHtml,
+                        sectionId,
+                    });
+                }
+            }
+            return { data: "Successfully add lectures", error: null, status: 200 };
+        })
+    );
+    if (error) {
+        console.error("Error in createSectionsAndLecturesInDb:", error);
+        return { data: null, error: error.message || "Database error", status: 500 };
+    }
+
+    return data
+}
+
+export const getSectionsAndLecturesByCourseIdFromDb = cache(async (courseId: string) => {
+    const { data, error } = await tryCatch(
+        db.query.sections.findMany({
+            where: eq(sections.courseId, courseId),
+            orderBy: [asc(sections.order)],
+            with: {
+                lectures: {
+                    orderBy: [asc(lectures.order)],
+                },
+            },
+        })
+    );
+
+    if (error) {
+        console.error("Error in getSectionsAndLecturesByCourseIdFromDb:", error);
+        return null;
+    }
+
+    // Transform the data to match your form schema
+    const transformedData = data?.map(section => ({
+        id: section.id,
+        title: section.title,
+        description: section.description || undefined,
+        order: section.order,
+        lectures: section.lectures.map(lecture => ({
+            id: lecture.id,
+            title: lecture.title,
+            type: lecture.type,
+            order: lecture.order,
+            isFreePreview: lecture.isFreePreview,
+            videoUrl: lecture.videoUrl || undefined,
+            articleContentHtml: lecture.articleContentHtml || undefined,
+        })),
+    })) || [];
+
+    return transformedData;
+});
+
+// Keep existing queries but add the upsert function
+
+export const upsertSectionsAndLecturesInDb = cache(async (courseId: string, sectionsInput: any[]) => {
+    const { data, error } = await tryCatch(
+        db.transaction(async (tx) => {
+            // Get existing sections and lectures for comparison
+            const existingSections = await tx.query.sections.findMany({
+                where: eq(sections.courseId, courseId),
+                with: {
+                    lectures: true,
+                },
+            });
+
+            const existingSectionIds = new Set(existingSections.map(s => s.id));
+            const existingLectureIds = new Set(
+                existingSections.flatMap(s => s.lectures.map(l => l.id))
+            );
+
+            // Track which IDs are in the new data
+            const newSectionIds = new Set(sectionsInput.map(s => s.id));
+            const newLectureIds = new Set(
+                sectionsInput.flatMap((s: any) => s.lectures.map((l: any) => l.id))
+            );
+
+            // Delete sections that are no longer present
+            const sectionsToDelete = existingSections.filter(s => !newSectionIds.has(s.id));
+            for (const section of sectionsToDelete) {
+                await tx.delete(lectures).where(eq(lectures.sectionId, section.id));
+                await tx.delete(sections).where(eq(sections.id, section.id));
+            }
+
+            // Delete lectures that are no longer present
+            for (const existingSection of existingSections) {
+                if (newSectionIds.has(existingSection.id)) {
+                    const lecturesToDelete = existingSection.lectures.filter(
+                        l => !newLectureIds.has(l.id)
+                    );
+                    for (const lecture of lecturesToDelete) {
+                        await tx.delete(lectures).where(eq(lectures.id, lecture.id));
+                    }
+                }
+            }
+
+            // Upsert sections and lectures
+            for (const section of sectionsInput) {
+                const sectionId = section.id || `section_${nanoid()}`;
+
+                if (existingSectionIds.has(sectionId)) {
+                    // Update existing section
+                    await tx.update(sections)
+                        .set({
+                            title: section.title,
+                            description: section.description,
+                            order: section.order,
+                        })
+                        .where(eq(sections.id, sectionId));
+                } else {
+                    // Insert new section
+                    await tx.insert(sections).values({
+                        id: sectionId,
+                        title: section.title,
+                        description: section.description,
+                        order: section.order,
+                        courseId,
+                    });
+                }
+
+                // Handle lectures
+                for (const lecture of section.lectures) {
+                    const lectureId = lecture.id || `lecture_${nanoid()}`;
+
+                    if (existingLectureIds.has(lectureId)) {
+                        // Update existing lecture
+                        const existingLecture = existingSections
+                            .flatMap(s => s.lectures)
+                            .find(l => l.id === lectureId);
+
+                        await tx.update(lectures)
+                            .set({
+                                title: lecture.title,
+                                order: lecture.order,
+                                type: lecture.type,
+                                isFreePreview: lecture.isFreePreview,
+                                videoUrl: lecture.videoUrl !== undefined ? lecture.videoUrl : existingLecture?.videoUrl,
+                                articleContentHtml: lecture.articleContentHtml,
+                            })
+                            .where(eq(lectures.id, lectureId));
+                    } else {
+                        // Insert new lecture
+                        await tx.insert(lectures).values({
+                            id: lectureId,
+                            title: lecture.title,
+                            order: lecture.order,
+                            type: lecture.type,
+                            isFreePreview: lecture.isFreePreview,
+                            videoUrl: lecture.videoUrl,
+                            articleContentHtml: lecture.articleContentHtml,
+                            sectionId,
+                        });
+                    }
+                }
+            }
+
+            return { success: true };
+        })
+    );
+
+    if (error) {
+        console.error("Error in upsertSectionsAndLecturesInDb:", error);
+        return { success: false, error: error.message || "Database error" };
+    }
+
+    return { success: true };
+});
+
