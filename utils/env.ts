@@ -1,6 +1,12 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
+const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ??
+    (process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'http://localhost:3000');
+
 export const env = createEnv({
     server: {
         BETTER_AUTH_SECRET: z.string(),
@@ -17,7 +23,7 @@ export const env = createEnv({
         CLOUDINARY_API_SECRET: z.string().min(1, "CLOUDINARY_API_SECRET is required."),
     },
     client: {
-        NEXT_PUBLIC_APP_URL: z.string().url().min(1, "NEXT_PUBLIC_APP_URL must be a valid URL"),
+        NEXT_PUBLIC_APP_URL: z.string().url().default(baseUrl),
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().min(1, "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY is required."),
     },
     // For Next.js >= 13.4.4, you only need to destructure client variables:
