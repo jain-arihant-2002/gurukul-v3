@@ -33,7 +33,7 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
 
   const isAdmin = session?.user?.role === 'admin';
   const isOwner = session?.user?.role === 'instructor' && session?.user?.id === course.authorId;
-  
+
   // Only show admin actions if user has appropriate role
   if (!isAdmin && !isOwner) {
     return null;
@@ -75,37 +75,39 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
         {/* Action Buttons */}
         <div className="space-y-2">
           {/* Primary Edit Button */}
-          <Button asChild size="sm" className="w-full">
-            <Link href={`/courses/${course.slug}/edit`}>
+          <Link href={`/courses/${course.slug}/edit`}>
+            <Button asChild size="sm" className="w-full">
               <Edit className="w-4 h-4 mr-2" />
               Edit Course
-            </Link>
-          </Button>
+            </Button>
+          </Link>
 
           {/* Secondary Actions */}
           {/* <div className="grid grid-cols-2 gap-2">
-            <Button asChild variant="outline" size="sm">
               <Link href={`/courses/${course.slug}/analytics`}>
+            <Button asChild variant="outline" size="sm">
                 <BarChart className="w-4 h-4 mr-1" />
                 Analytics
-              </Link>
-            </Button>
+                </Button>
+                </Link>
             
-            <Button asChild variant="outline" size="sm">
-              <Link href={`/courses/${course.slug}/students`}>
+                <Link href={`/courses/${course.slug}/students`}>
+                <Button asChild variant="outline" size="sm">
                 <Users className="w-4 h-4 mr-1" />
                 Students
-              </Link>
-            </Button>
+                </Button>
+                </Link>
           </div> */}
 
           {/* Settings Link */}
-          {/* <Button asChild variant="ghost" size="sm" className="w-full">
+          {/* 
             <Link href={`/courses/${course.slug}/settings`}>
+          <Button asChild variant="ghost" size="sm" className="w-full">
               <Settings className="w-4 h-4 mr-2" />
               Course Settings
+              </Button>
             </Link>
-          </Button> */}
+           */}
         </div>
       </CardContent>
     </Card>

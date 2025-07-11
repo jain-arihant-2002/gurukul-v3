@@ -17,17 +17,17 @@ export default function CoursePurchaseSuccessPage() {
           <p className="text-muted-foreground text-center text-lg">
             Thank you for your purchase. You now have full access to this course.
           </p>
-          <Button asChild className="w-full mt-2">
-            {/* Todo make this link to go to course with video page */}
-            <Link href="../"> 
+          <Link href="../">
+            <Button asChild className="w-full mt-2">
+              {/* Todo make this link to go to course with video page */}
               Go to Course
-            </Link>
-          </Button>
-          <Button asChild variant="outline" className="w-full">
-            <Link href="/courses/page/1">
+            </Button>
+          </Link>
+          <Link href="/courses/page/1">
+            <Button asChild variant="outline" className="w-full">
               Browse More Courses
-            </Link>
-          </Button>
+            </Button>
+          </Link>
         </CardContent>
       </Card>
     </div>

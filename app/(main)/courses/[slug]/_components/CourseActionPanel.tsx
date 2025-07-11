@@ -42,15 +42,17 @@ export default function CourseActionPanel({ courseId, courseSlug, price }: Cours
         checkEnrollmentStatus();
     }, [courseId, user, isPending]);
 
-      if (isEnrolled === null) {
+    if (isEnrolled === null) {
         return <Skeleton className="h-12 w-full" />;
-      }
+    }
 
     if (isEnrolled) {
         return (
-            <Button asChild className="w-full text-lg font-semibold">
-                <Link href={`/courses/${courseSlug}/learn`}>Go to Course</Link>
-            </Button>
+            <Link href={`/courses/${courseSlug}/learn`}>
+                <Button asChild className="w-full text-lg font-semibold">
+                    Go to Course
+                </Button>
+            </Link>
         );
     }
 

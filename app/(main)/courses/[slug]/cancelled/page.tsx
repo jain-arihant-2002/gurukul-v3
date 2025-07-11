@@ -24,11 +24,11 @@ export default async function CoursePaymentFailedPage({ params }: { params: Prom
               Back to Course
             </Link>
           </Button>
-          <Button asChild variant="outline" className="w-full">
             <Link href="/courses/page/1">
+          <Button asChild variant="outline" className="w-full">
               Browse More Courses
-            </Link>
           </Button>
+            </Link>
         </CardContent>
       </Card>
     </div>
