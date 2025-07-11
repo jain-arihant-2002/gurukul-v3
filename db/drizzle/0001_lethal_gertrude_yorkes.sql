@@ -1,1 +1,0 @@
-ALTER TABLE "lectures" RENAME COLUMN "video_url" TO "video_public_id";

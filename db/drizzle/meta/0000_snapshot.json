@@ -1,5 +1,5 @@
 {
-  "id": "6a793202-b59e-4d8f-aac6-494fe4478003",
+  "id": "ec3f46aa-311b-424b-835f-0b631679e1df",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -497,8 +497,8 @@
           "notNull": true,
           "default": false
         },
-        "video_url": {
-          "name": "video_url",
+        "video_public_id": {
+          "name": "video_public_id",
           "type": "text",
           "primaryKey": false,
           "notNull": false

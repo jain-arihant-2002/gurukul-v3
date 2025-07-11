@@ -70,7 +70,7 @@ CREATE TABLE "lectures" (
 	"type" "lecture_type" NOT NULL,
 	"duration_in_seconds" integer DEFAULT 0 NOT NULL,
 	"is_free_preview" boolean DEFAULT false NOT NULL,
-	"video_url" text,
+	"video_public_id" text,
 	"article_content_html" text,
 	"section_id" text NOT NULL
 );
