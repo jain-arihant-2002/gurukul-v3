@@ -37,8 +37,7 @@ export async function POST(req: NextRequest) {
           currency: "usd",
           product_data: {
             name: course.title,
-            description: course.shortDescription,
-            images: course.coverImage ? [course.coverImage] : [],
+          description: course.shortDescription,
           },
           unit_amount: Math.round(parseFloat(course.price) * 100), // Price in cents
         },

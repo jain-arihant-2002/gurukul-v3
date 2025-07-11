@@ -48,12 +48,12 @@ export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, on
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>
-            <Link href={"/dashboard"} className="flex items-center gap-2">
+          <Link href={"/dashboard"} className="flex items-center gap-2">
+            <DropdownMenuItem>
               <LayoutDashboardIcon size={16} className="opacity-60" aria-hidden="true" />
               <span>Dashboard</span>
-            </Link>
-          </DropdownMenuItem>
+            </DropdownMenuItem>
+          </Link>
           {/*<DropdownMenuItem>
             <Layers2Icon size={16} className="opacity-60" aria-hidden="true" />
             <span>Option 2</span>
