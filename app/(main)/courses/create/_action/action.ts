@@ -13,7 +13,7 @@ const lectureSchema = z.object({
     type: z.enum(["video"]), // Only allow "video" for now
     order: z.number(),
     isFreePreview: z.boolean(),
-    videoPublicId: z.string().min(1, "Video public ID is required"),
+    videoPublicId: z.string().optional(), // as user may not upload a video
     // articleContentHtml: z.string().optional(), // Commented for now
 });
 
@@ -63,9 +63,10 @@ export async function getSectionsAndLecturesAction(courseId: string) {
 // Upsert sections and lectures for a course
 export async function upsertSectionsAndLecturesAction(courseId: string, data: unknown, courseSlug: string) {
     try {
+        console.log("Data from section page:", data);
         const validated = formSchema.safeParse(data);
-
         if (!validated.success) {
+            console.log("Validation errors:", validated.error.errors);
             return ApiResponses.unprocessableEntity("Invalid input data");
         }
 

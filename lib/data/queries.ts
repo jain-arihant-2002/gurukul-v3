@@ -434,6 +434,7 @@ export const createInstructorProfileInDb = cache(async (instructorData: Partial<
         })
     );
     if (error) {
+        console.log("Error in createInstructorProfileInDb:", error);
         const dbError = error.cause as { code?: string; detail?: string; constraint?: string; message?: string };
         switch (dbError.code) {
             case "23505":
