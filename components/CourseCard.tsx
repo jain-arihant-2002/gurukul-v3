@@ -159,11 +159,11 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Link href={`/courses/${course.slug}`}>
-          <Button asChild className="w-full group-hover:bg-primary/90 transition-colors">
+        <Button asChild className="w-full group-hover:bg-primary/90 transition-colors">
+          <Link href={`/courses/${course.slug}`}>
             View Course
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </CardFooter>
     </Card>
   );

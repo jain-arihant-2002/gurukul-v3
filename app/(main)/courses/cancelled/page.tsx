@@ -17,16 +17,16 @@ export default function CoursePaymentCancelledPage() {
           <p className="text-muted-foreground text-center text-lg">
             Your payment was cancelled. You can try again or browse more courses.
           </p>
-          <Link href="/courses/page/1">
-            <Button asChild className="w-full mt-2">
+          <Button asChild className="w-full mt-2">
+            <Link href="/courses/page/1">
               Browse Courses
-            </Button>
-          </Link>
-          <Link href="/">
-            <Button asChild variant="outline" className="w-full">
+            </Link>
+          </Button>
+          <Button asChild variant="outline" className="w-full">
+            <Link href="/">
               Go to Home
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </CardContent>
       </Card>
     </div>

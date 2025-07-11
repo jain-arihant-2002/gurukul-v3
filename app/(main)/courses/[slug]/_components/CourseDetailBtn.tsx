@@ -33,7 +33,7 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
 
   const isAdmin = session?.user?.role === 'admin';
   const isOwner = session?.user?.role === 'instructor' && session?.user?.id === course.authorId;
-
+  
   // Only show admin actions if user has appropriate role
   if (!isAdmin && !isOwner) {
     return null;
@@ -75,39 +75,37 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
         {/* Action Buttons */}
         <div className="space-y-2">
           {/* Primary Edit Button */}
-          <Link href={`/courses/${course.slug}/edit`}>
-            <Button asChild size="sm" className="w-full">
+          <Button asChild size="sm" className="w-full">
+            <Link href={`/courses/${course.slug}/edit`}>
               <Edit className="w-4 h-4 mr-2" />
               Edit Course
-            </Button>
-          </Link>
+            </Link>
+          </Button>
 
           {/* Secondary Actions */}
-          {/* <div className="grid grid-cols-2 gap-2">
-              <Link href={`/courses/${course.slug}/analytics`}>
+          <div className="grid grid-cols-2 gap-2">
             <Button asChild variant="outline" size="sm">
+              <Link href={`/courses/${course.slug}/analytics`}>
                 <BarChart className="w-4 h-4 mr-1" />
                 Analytics
-                </Button>
-                </Link>
+              </Link>
+            </Button>
             
-                <Link href={`/courses/${course.slug}/students`}>
-                <Button asChild variant="outline" size="sm">
+            <Button asChild variant="outline" size="sm">
+              <Link href={`/courses/${course.slug}/students`}>
                 <Users className="w-4 h-4 mr-1" />
                 Students
-                </Button>
-                </Link>
-          </div> */}
+              </Link>
+            </Button>
+          </div>
 
           {/* Settings Link */}
-          {/* 
-            <Link href={`/courses/${course.slug}/settings`}>
           <Button asChild variant="ghost" size="sm" className="w-full">
+            <Link href={`/courses/${course.slug}/settings`}>
               <Settings className="w-4 h-4 mr-2" />
               Course Settings
-              </Button>
             </Link>
-           */}
+          </Button>
         </div>
       </CardContent>
     </Card>

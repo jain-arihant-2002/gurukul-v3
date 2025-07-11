@@ -22,16 +22,12 @@ export default function Hero() {
           grow your knowledge in a beautiful, collaborative environment.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link href="/courses">
-            <Button asChild size="lg">
-              Browse Courses
-            </Button>
-          </Link>
-          <Link href="/sign-up">
-            <Button asChild variant="outline" size="lg">
-              Get Started
-            </Button>
-          </Link>
+          <Button asChild size="lg">
+            <Link href="/courses">Browse Courses</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link href="/sign-up">Get Started</Link>
+          </Button>
         </div>
       </div>
     </section>
