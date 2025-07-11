@@ -2,14 +2,10 @@ import { XCircle } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { redirect } from "next/navigation";
 
-export default function CoursePaymentFailedPage({ params, searchParams }: { params: { slug: string }, searchParams: { cancelled?: string } }) {
-  // Only allow access if ?cancelled=true is present
-  if (searchParams?.cancelled !== "true") {
-    redirect(`/courses/${params.slug}`);
-  }
+export default async function CoursePaymentFailedPage({ params }: { params: Promise<{ slug: string }> }) {
 
+  const { slug } = await params;
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md shadow-lg">
@@ -24,7 +20,7 @@ export default function CoursePaymentFailedPage({ params, searchParams }: { para
             Your payment could not be processed. Please try again or contact support if the issue persists.
           </p>
           <Button asChild className="w-full mt-2">
-            <Link href={`/courses/${params.slug}`}>
+            <Link href={`/courses/${slug}`}>
               Back to Course
             </Link>
           </Button>

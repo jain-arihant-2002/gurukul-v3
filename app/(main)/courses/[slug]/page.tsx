@@ -69,7 +69,6 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
   }
 
   const visibleSections = course.sections
-  // .slice(0, 5);
 
   return (
     <section className="w-[80%] mx-auto my-12">
@@ -87,12 +86,12 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             <CardContent className="p-4">
               <div className="space-y-3">
                 {/* Rating */}
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Rating</span>
                   <div className="flex items-center gap-2">
                     {renderStars(course.rating)}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Enrollment Count */}
                 <div className="flex items-center justify-between">
@@ -163,14 +162,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   </div>
                 </div>
               </div>
+              {/* Purchase Button */}
+              <div className="mt-6 flex flex-col gap-2">
+                <CourseActionPanel courseId={course.id} courseSlug={course.slug} price={course.price} />
+              </div>
             </CardContent>
           </Card>
 
-          {/* Purchase Button */}
-          {/* todo make this page go to dashboard if course is purchased */}
-          <div className="mt-6 flex flex-col gap-2">
-            <CourseActionPanel courseId={course.id} courseSlug={course.slug} price={course.price} />
-          </div>
 
           {/* Course Management - Now handled by client component */}
           <CourseStatusBadge course={course} />
@@ -214,7 +212,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           {/* Rating Display */}
           <div className="mb-6">
             <div className="flex items-center gap-4">
-              {renderStars(course.rating)}
+              {/* {renderStars(course.rating)} */}
               <span className="text-sm text-muted-foreground">
                 ({course.enrollmentCount.toLocaleString()} students)
               </span>

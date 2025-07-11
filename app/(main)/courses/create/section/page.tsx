@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { getSectionsAndLecturesAction, upsertSectionsAndLecturesAction } from "../_action/action";
@@ -575,7 +575,6 @@ function AddLectureDialog({
     const [title, setTitle] = useState("");
     const [type] = useState<"video">("video");
     const [isFreePreview, setIsFreePreview] = useState(false);
-    // Remove videoPublicId input from dialog
 
     // NEW: state for upload
     const [videoPublicId, setVideoPublicId] = useState("");
@@ -756,8 +755,8 @@ function AddLectureDialog({
     );
 }
 
-// Main Component
-export default function SectionLectureManager() {
+// Content Component
+function SectionLectureManagerContent() {
     const router = useRouter();
     const searchParams = useSearchParams();
     const courseId = searchParams.get("courseId");
@@ -1057,5 +1056,14 @@ export default function SectionLectureManager() {
                 </Form>
             </div>
         </div>
+    );
+}
+
+// Main export
+export default function SectionLectureManager() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center min-h-screen">Loading...</div>}>
+            <SectionLectureManagerContent />
+        </Suspense>
     );
 }

@@ -5,10 +5,11 @@ import { redirect } from "next/navigation";
 import { CoursePlayerClient } from "./_components/CoursePlayerClient";
 import { getCloudinaryVideoUrl } from "@/utils/helperFunctions";
 
-export default async function CoursePlayerPage({ params }: { params: { slug: string } }) {
+export default async function CoursePlayerPage({ params }: { params: Promise<{ slug: string }> }) {
     // 1. Fetch user authentication and course data
     const { user, isAuthenticated } = await getAuth();
-    const course = await getCourseBySlug(params.slug);
+    const { slug } = await params;
+    const course = await getCourseBySlug(slug);
 
     // 2. Basic Validation
     if (!course) {
@@ -17,14 +18,14 @@ export default async function CoursePlayerPage({ params }: { params: { slug: str
 
     if (!isAuthenticated || !user) {
         // Redirect to sign-in, with a callback to this page after login
-        redirect(`/sign-in?callbackUrl=/learn/courses/${params.slug}`);
+        redirect(`/sign-in?callbackUrl=/learn/courses/${slug}`);
     }
 
     // 3. CRITICAL: Authorization Check
     const isEnrolled = await checkUserEnrollment(user.id, course.id);
 
     if (!isEnrolled) {
-        redirect(`/courses/${params.slug}`);
+        redirect(`/courses/${slug}`);
     }
 
     const courseWithVideoUrls = {

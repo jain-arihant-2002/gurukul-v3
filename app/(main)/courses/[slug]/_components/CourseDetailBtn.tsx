@@ -83,7 +83,7 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
           </Button>
 
           {/* Secondary Actions */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* <div className="grid grid-cols-2 gap-2">
             <Button asChild variant="outline" size="sm">
               <Link href={`/courses/${course.slug}/analytics`}>
                 <BarChart className="w-4 h-4 mr-1" />
@@ -97,15 +97,15 @@ export default function CourseAdminActions({ course }: CourseAdminActionsProps) 
                 Students
               </Link>
             </Button>
-          </div>
+          </div> */}
 
           {/* Settings Link */}
-          <Button asChild variant="ghost" size="sm" className="w-full">
+          {/* <Button asChild variant="ghost" size="sm" className="w-full">
             <Link href={`/courses/${course.slug}/settings`}>
               <Settings className="w-4 h-4 mr-2" />
               Course Settings
             </Link>
-          </Button>
+          </Button> */}
         </div>
       </CardContent>
     </Card>

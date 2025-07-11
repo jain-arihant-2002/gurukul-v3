@@ -188,7 +188,7 @@ export default function SignIn() {
           </div>
           
           <div className={cn("w-full gap-2 flex items-center", "justify-between flex-col")}>
-            <Button
+            {/* <Button
               variant="outline"
               className="w-full gap-2"
               disabled={isSubmitting}
@@ -202,7 +202,7 @@ export default function SignIn() {
               </svg>
               
               Sign in with Google
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               className="w-full gap-2"
