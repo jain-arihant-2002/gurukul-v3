@@ -81,17 +81,17 @@ export type Instructor = {
 /**
  * Represents a single lecture or piece of content within a section.
  */
-export type Lecture = {
+export interface Lecture {
   id: string;
   title: string;
-  order: number;
-  type: LectureType;
   durationInSeconds: number;
   isFreePreview: boolean;
-  videoUrl?: string;
-  articleContentHtml?: string;
-  quiz?: Quiz | null;
-};
+  videoPublicId?: string | undefined;
+  videoUrl?: string
+  quiz?: Quiz | null | undefined;
+  order: number;
+  type: string;
+}
 
 /**
  * Represents a logical grouping of lectures within a course.
@@ -101,7 +101,7 @@ export type Section = {
   title: string;
   description: string | null;
   order: number;
-  lectures: Lecture[];
+  lectures?: Lecture[];
 };
 
 /**
@@ -198,18 +198,7 @@ export type CourseDetails = {
   authorName: string;
   authorUsername: string;
   // Fully detailed sections and lectures
-  sections: {
-    id: string;
-    title: string;
-    lectures: {
-      id: string;
-      title: string;
-      durationInSeconds: number;
-      isFreePreview: boolean;
-      videoUrl?: string;
-      quiz?: Quiz | null; // Including quiz for potential future use
-    }[];
-  }[];
+  sections?: Section[] // Including quiz for potential future use
 };
 
 /**
@@ -228,6 +217,7 @@ export type InstructorDetails = {
   coursesCount: number;
   createdAt: string;
   updatedAt: string;
+  status?: CourseStatus;
   courses: CourseCard[]; // This can be a simplified version of CourseCard for listing
 };
 
@@ -289,7 +279,7 @@ export type CourseFormData = {
   prerequisites?: string[];
   coverImage?: string;
   createdAt?: Date; // used for updated courses
-  authorId: string; 
+  authorId: string;
 };
 
 export type CreateCourseDbInput = {

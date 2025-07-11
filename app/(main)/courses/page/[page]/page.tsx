@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import CourseList from "@/app/(main)/_component/CourseList";
 import PaginationBar from "@/components/PaginationBar";
 import { getCoursesCard, getCoursesCount } from "@/lib/dal";
-import AddCourseBtn from "@/app/(main)/courses/_component/AddCourseBtn"; // <-- Add this import
+import AddCourseBtn from "@/app/(main)/courses/_components/AddCourseBtn"; // <-- Add this import
 
 const COURSES_PER_PAGE = 12;
 

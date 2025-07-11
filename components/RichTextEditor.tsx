@@ -165,7 +165,7 @@ export default function RichTextEditor({
   }
 
   return (
-    <div className={`border rounded-lg ${className}`}>
+    <div className={`border rounded-lg overflow-auto ${className}`}>
       {/* Toolbar */}
       <div className="border-b p-2 flex flex-wrap gap-1 items-center">
         {/* Basic formatting */}
@@ -374,7 +374,7 @@ export default function RichTextEditor({
 
       {/* Editor content */}
       <div 
-        className={`p-4 min-h-[200px] relative transition-all duration-200 ${
+        className={`p-4 min-h-[200px] relative transition-all duration-200 overflow-auto ${
           isDragOver ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-600' : ''
         }`}
         onDrop={handleDrop}

@@ -554,7 +554,7 @@ export const getLectureWithCourseIdFromDb = cache(async (lectureId: string) => {
             where: eq(lectures.id, lectureId),
             columns: {
                 id: true,
-                videoUrl: true,
+                videoPublicId: true,
                 isFreePreview: true,
                 sectionId: true
             },
@@ -575,7 +575,7 @@ export const getLectureWithCourseIdFromDb = cache(async (lectureId: string) => {
 
     const result = {
         id: data.id,
-        videoUrl: data.videoUrl,
+        videoUrl: data.videoPublicId,
         isFreePreview: data.isFreePreview,
         courseId: data.section.courseId,
     };
@@ -604,7 +604,7 @@ export async function createSectionsAndLecturesInDb(courseId: string, sectionsIn
                         order: lecture.order,
                         type: lecture.type,
                         isFreePreview: lecture.isFreePreview,
-                        videoUrl: lecture.videoUrl,
+                        videoPublicId: lecture.videoPublicId,
                         articleContentHtml: lecture.articleContentHtml,
                         sectionId,
                     });
@@ -651,7 +651,7 @@ export const getSectionsAndLecturesByCourseIdFromDb = cache(async (courseId: str
             type: lecture.type,
             order: lecture.order,
             isFreePreview: lecture.isFreePreview,
-            videoUrl: lecture.videoUrl || undefined,
+            videoPublicId: lecture.videoPublicId || undefined,
             articleContentHtml: lecture.articleContentHtml || undefined,
         })),
     })) || [];
@@ -742,7 +742,7 @@ export const upsertSectionsAndLecturesInDb = cache(async (courseId: string, sect
                                 order: lecture.order,
                                 type: lecture.type,
                                 isFreePreview: lecture.isFreePreview,
-                                videoUrl: lecture.videoUrl !== undefined ? lecture.videoUrl : existingLecture?.videoUrl,
+                                videoPublicId: lecture.videoPublicId !== undefined ? lecture.videoPublicId : existingLecture?.videoPublicId,
                                 articleContentHtml: lecture.articleContentHtml,
                             })
                             .where(eq(lectures.id, lectureId));
@@ -754,7 +754,7 @@ export const upsertSectionsAndLecturesInDb = cache(async (courseId: string, sect
                             order: lecture.order,
                             type: lecture.type,
                             isFreePreview: lecture.isFreePreview,
-                            videoUrl: lecture.videoUrl,
+                            videoPublicId: lecture.videoPublicId,
                             articleContentHtml: lecture.articleContentHtml,
                             sectionId,
                         });
@@ -774,3 +774,79 @@ export const upsertSectionsAndLecturesInDb = cache(async (courseId: string, sect
     return { success: true };
 });
 
+export const getEnrolledCoursesForUserFromDb = cache(async (userId: string): Promise<CourseCard[]> => {
+    const { data, error } = await tryCatch(
+        db.select({
+            id: courses.id,
+            slug: courses.slug,
+            title: courses.title,
+            status: courses.status,
+            coverImage: courses.coverImage,
+            categories: courses.categories,
+            price: courses.price,
+            rating: courses.rating,
+            level: courses.level,
+            authorName: user.name,
+            updatedAt: courses.updatedAt,
+            createdAt: courses.createdAt,
+            enrollmentCount: courses.enrollmentCount,
+            shortDescription: courses.shortDescription,
+        })
+            .from(enrollments)
+            .innerJoin(courses, eq(enrollments.courseId, courses.id))
+            .innerJoin(user, eq(courses.authorId, user.id))
+            .where(eq(enrollments.userId, userId))
+            .orderBy(desc(enrollments.enrolledAt))
+    );
+
+    if (error) {
+        console.error("Error in getEnrolledCoursesForUserFromDb:", error);
+    }
+    return (data ?? []).map(course => ({
+        ...course,
+        status: course.status as CourseStatus,
+        price: parseFloat(course.price),
+        rating: parseFloat(course.rating),
+        updatedAt: course.updatedAt instanceof Date ? course.updatedAt.toISOString() : course.updatedAt,
+        createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : course.createdAt,
+        level: course.level as CourseLevel
+    }));
+});
+
+export const getAuthoredCoursesForInstructorFromDb = cache(async (authorId: string): Promise<CourseCard[]> => {
+    const { data, error } = await tryCatch(
+        db.select({
+            id: courses.id,
+            slug: courses.slug,
+            title: courses.title,
+            status: courses.status,
+            coverImage: courses.coverImage,
+            categories: courses.categories,
+            price: courses.price,
+            rating: courses.rating,
+            level: courses.level,
+            authorName: user.name,
+            updatedAt: courses.updatedAt,
+            createdAt: courses.createdAt,
+            enrollmentCount: courses.enrollmentCount,
+            shortDescription: courses.shortDescription,
+        })
+            .from(courses)
+            .innerJoin(user, eq(courses.authorId, user.id))
+            .where(eq(courses.authorId, authorId))
+            .orderBy(desc(courses.updatedAt))
+    );
+
+    if (error) {
+        console.error("Error in getAuthoredCoursesForInstructorFromDb:", error);
+    }
+    return (data ?? []).map(course => ({
+        ...course,
+        status: course.status as CourseStatus,
+        price: parseFloat(course.price),
+        rating: parseFloat(course.rating),
+        updatedAt: course.updatedAt instanceof Date ? course.updatedAt.toISOString() : course.updatedAt,
+        createdAt: course.createdAt instanceof Date ? course.createdAt.toISOString() : course.createdAt,
+        level: course.level as CourseLevel
+    }));
+});

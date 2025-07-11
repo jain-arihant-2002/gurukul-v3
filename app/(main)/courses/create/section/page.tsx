@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { getSectionsAndLecturesAction, upsertSectionsAndLecturesAction } from "@/app/(main)/courses/create/_action/action";
+import { getSectionsAndLecturesAction, upsertSectionsAndLecturesAction } from "../_action/action";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,11 +21,9 @@ import {
     SortableContext,
     sortableKeyboardCoordinates,
     verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import {
     useSortable,
-    SortableContext as NestedSortableContext,
 } from "@dnd-kit/sortable";
+
 import { CSS } from "@dnd-kit/utilities";
 import { restrictToVerticalAxis } from "@dnd-kit/modifiers";
 
@@ -42,11 +40,6 @@ import {
 } from "@/components/ui/select";
 import {
     Form,
-    FormControl,
-    FormField,
-    FormItem,
-    FormLabel,
-    FormMessage,
 } from "@/components/ui/form";
 import {
     Dialog,
@@ -66,19 +59,22 @@ import {
     HelpCircle,
     Edit,
     Upload,
+    Loader2,
 } from "lucide-react";
 import { nanoid } from "nanoid";
 import { useAuth } from "@/lib/auth/use-session";
+import { generateUploadSignature } from "@/lib/cloudinary.action";
 
 // Validation schemas
 const lectureSchema = z.object({
     id: z.string(),
     title: z.string().min(1, "Lecture title is required"),
-    type: z.enum(["video", "article", "quiz"]),
+    type: z.enum(["video"]), // Only allow "video" for now
     order: z.number(),
     isFreePreview: z.boolean(),
-    videoUrl: z.string().optional(),
-    articleContentHtml: z.string().optional(),
+    videoPublicId: z.string().optional(),
+    // videoPublicId will be set internally after upload, not by user
+    // articleContentHtml: z.string().optional(), // Commented for now
 });
 
 const sectionSchema = z.object({
@@ -413,9 +409,9 @@ function EditLectureDialog({
 }) {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState(lecture.title);
-    const [type, setType] = useState(lecture.type);
+    const [type, setType] = useState<"video">("video");
     const [isFreePreview, setIsFreePreview] = useState(lecture.isFreePreview);
-    const [videoUrl, setVideoUrl] = useState(lecture.videoUrl || "");
+    // Remove videoPublicId input from dialog
 
     const handleSave = () => {
         if (!title.trim()) {
@@ -426,9 +422,9 @@ function EditLectureDialog({
         onUpdate({
             ...lecture,
             title: title.trim(),
-            type: type as "video" | "article" | "quiz",
+            type: "video",
             isFreePreview,
-            videoUrl: type === "video" ? videoUrl : undefined,
+            // videoPublicId will be set after upload, not by user
         });
 
         setOpen(false);
@@ -457,36 +453,22 @@ function EditLectureDialog({
                         />
                     </div>
 
+                    {/* Only show video type, comment others */}
                     <div>
                         <label className="text-sm font-medium">Type *</label>
-                        <Select value={type} onValueChange={(value) => setType(value as "video" | "article" | "quiz")}>
+                        <Select value={type} onValueChange={() => { }}>
                             <SelectTrigger className="mt-1">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="video">Video</SelectItem>
-                                <SelectItem value="article">Article</SelectItem>
-                                <SelectItem value="quiz">Quiz</SelectItem>
+                                {/* <SelectItem value="article">Article</SelectItem>
+                                <SelectItem value="quiz">Quiz</SelectItem> */}
                             </SelectContent>
                         </Select>
                     </div>
 
-                    {type === "video" && (
-                        <div>
-                            <label className="text-sm font-medium">Video URL</label>
-                            <div className="mt-1 space-y-2">
-                                <Input
-                                    value={videoUrl}
-                                    onChange={(e) => setVideoUrl(e.target.value)}
-                                    placeholder="Video URL (will be uploaded to Cloudinary)"
-                                />
-                                <Button variant="outline" size="sm" className="w-full">
-                                    <Upload className="h-4 w-4 mr-2" />
-                                    Upload Video to Cloudinary
-                                </Button>
-                            </div>
-                        </div>
-                    )}
+                    {/* Remove Video Public ID input */}
 
                     <div className="flex items-center space-x-2">
                         <Switch
@@ -591,9 +573,71 @@ function AddLectureDialog({
 }) {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState("");
-    const [type, setType] = useState<"video" | "article" | "quiz">("video");
+    const [type] = useState<"video">("video");
     const [isFreePreview, setIsFreePreview] = useState(false);
-    const [videoUrl, setVideoUrl] = useState("");
+    // Remove videoPublicId input from dialog
+
+    // NEW: state for upload
+    const [videoPublicId, setVideoPublicId] = useState("");
+    const [isUploading, setIsUploading] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const searchParams = useSearchParams();
+    const courseId = searchParams.get("courseId");
+
+    const handleVideoUpload = async (file: File) => {
+        if (!file || !courseId) return;
+
+        setIsUploading(true);
+        setUploadProgress(0);
+
+        // 1. Get signature from our server action
+        const sigResult = await generateUploadSignature(`courses/${courseId}/lectures`);
+        if (!sigResult.success || !sigResult.data) {
+            toast.error(sigResult.message || "Failed to get upload signature.");
+            setIsUploading(false);
+            return;
+        }
+
+        const { timestamp, signature, apiKey, cloudName, folder } = sigResult.data;
+
+        // 2. Prepare form data for Cloudinary
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("api_key", apiKey);
+        formData.append("timestamp", timestamp.toString());
+        formData.append("signature", signature);
+        formData.append("folder", folder);
+
+        // 3. Upload directly to Cloudinary using fetch with progress tracking
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloudName}/video/upload`, true);
+
+        xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+                const percentComplete = Math.round((event.loaded / event.total) * 100);
+                setUploadProgress(percentComplete);
+            }
+        };
+
+        xhr.onload = () => {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                setVideoPublicId(response.public_id);
+                toast.success("Video uploaded successfully!");
+            } else {
+                const response = JSON.parse(xhr.responseText);
+                toast.error(response.error?.message || "Video upload failed.");
+            }
+            setIsUploading(false);
+        };
+
+        xhr.onerror = () => {
+            toast.error("An error occurred during the upload.");
+            setIsUploading(false);
+        };
+
+        xhr.send(formData);
+    };
 
     const handleAdd = () => {
         if (!title.trim()) {
@@ -605,16 +649,18 @@ function AddLectureDialog({
             id: `lecture_${nanoid()}`,
             title: title.trim(),
             type,
-            order: 0, // Will be set by parent
+            order: 0,
             isFreePreview,
-            videoUrl: type === "video" ? videoUrl : undefined,
+            // CHANGE: use videoPublicId
+            videoPublicId: type === "video" ? videoPublicId : undefined,
         };
 
         onAdd(sectionIndex, newLecture);
+
+        // Reset state
         setTitle("");
-        setType("video");
         setIsFreePreview(false);
-        setVideoUrl("");
+        setVideoPublicId("");
         setOpen(false);
         toast.success("Lecture added successfully");
     };
@@ -641,38 +687,50 @@ function AddLectureDialog({
                             className="mt-1"
                         />
                     </div>
-
                     <div>
                         <label className="text-sm font-medium">Type *</label>
-                        <Select value={type} onValueChange={(value) => setType(value as "video" | "article" | "quiz")}>
+                        <Select value={type} disabled>
                             <SelectTrigger className="mt-1">
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="video">Video</SelectItem>
-                                <SelectItem value="article">Article</SelectItem>
-                                <SelectItem value="quiz">Quiz</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
 
+                    {/* UPDATED: Video Upload Section */}
                     {type === "video" && (
                         <div>
-                            <label className="text-sm font-medium">Video URL</label>
+                            <label className="text-sm font-medium">Lecture Video</label>
                             <div className="mt-1 space-y-2">
-                                <Input
-                                    value={videoUrl}
-                                    onChange={(e) => setVideoUrl(e.target.value)}
-                                    placeholder="Video URL (will be uploaded to Cloudinary)"
-                                />
-                                <Button variant="outline" size="sm" className="w-full">
-                                    <Upload className="h-4 w-4 mr-2" />
-                                    Upload Video to Cloudinary
-                                </Button>
+                                {isUploading ? (
+                                    <div className="w-full text-center">
+                                        <div className="flex items-center justify-center gap-2 mb-2">
+                                            <Loader2 className="h-4 w-4 animate-spin" />
+                                            <span>Uploading... {uploadProgress}%</span>
+                                        </div>
+                                        <div className="w-full bg-muted rounded-full h-2.5">
+                                            <div className="bg-primary h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                                        </div>
+                                    </div>
+                                ) : videoPublicId ? (
+                                    <div className="text-sm text-green-600 dark:text-green-400 p-2 bg-green-50 dark:bg-green-950/50 rounded-md">
+                                        Video ready: <span className="font-mono text-xs">{videoPublicId}</span>
+                                    </div>
+                                ) : (
+                                    <Input
+                                        type="file"
+                                        accept="video/*"
+                                        onChange={(e) => e.target.files && handleVideoUpload(e.target.files[0])}
+                                        disabled={isUploading}
+                                    />
+                                )}
                             </div>
                         </div>
                     )}
 
+                    {/* ... Free Preview switch remains the same ... */}
                     <div className="flex items-center space-x-2">
                         <Switch
                             id="free-preview"
@@ -688,7 +746,9 @@ function AddLectureDialog({
                         <Button variant="outline" onClick={() => setOpen(false)}>
                             Cancel
                         </Button>
-                        <Button onClick={handleAdd}>Add Lecture</Button>
+                        <Button onClick={handleAdd} disabled={isUploading}>
+                            {isUploading ? "Uploading..." : "Add Lecture"}
+                        </Button>
                     </div>
                 </div>
             </DialogContent>
@@ -721,15 +781,29 @@ export default function SectionLectureManager() {
                 setIsLoading(false);
                 return;
             }
-            
+
             try {
                 setIsLoading(true);
                 const result = await getSectionsAndLecturesAction(courseId);
-                
+
                 if (result.success && result.data && result.data.length > 0) {
-                    form.setValue("sections", result.data);
+                    // Filter and map result.data to match the expected schema
+                    const filteredSections = result.data.map((section: any) => ({
+                        ...section,
+                        lectures: section.lectures
+                            .filter((lecture: any) => lecture.type === "video")
+                            .map((lecture: any) => ({
+                                id: lecture.id,
+                                title: lecture.title,
+                                order: lecture.order,
+                                type: "video",
+                                isFreePreview: lecture.isFreePreview,
+                                videoPublicId: lecture.videoPublicId,
+                            })),
+                    }));
+                    form.setValue("sections", filteredSections);
                     setHasExistingData(true);
-                    toast.success(`Loaded ${result.data.length} existing sections`);
+                    toast.success(`Loaded ${filteredSections.length} existing sections`);
                 } else if (!result.success) {
                     toast.error(result.message || "Failed to load course structure");
                 } else {

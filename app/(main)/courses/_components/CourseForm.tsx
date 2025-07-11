@@ -323,7 +323,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="slug"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel htmlFor="course-slug">Course Slug *</FormLabel>
+                                                <FormLabel htmlFor="course-slug">Course Slug * (Url friendly title)</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         id="course-slug"
@@ -462,17 +462,21 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
                                         name="totalDurationHours"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel htmlFor="course-total-duration">Total Course Time (hours)</FormLabel>
+                                                <FormLabel htmlFor="course-total-duration">Total Course Time (hours)*</FormLabel>
                                                 <FormControl>
                                                     <Input
                                                         id="course-total-duration"
                                                         type="number"
                                                         min={0}
-                                                        step={0.1}
-                                                        placeholder="e.g. 5.5"
-                                                        {...field}
+                                                        step={1}
+                                                        placeholder="e.g. 5"
+                                                        value={field.value ?? ""}
+                                                        onChange={e => {
+                                                            const val = e.target.value;
+                                                            field.onChange(val === "" ? undefined : parseInt(val, 10));
+                                                        }}
                                                     />
-                                                </FormControl>  
+                                                </FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}

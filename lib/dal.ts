@@ -1,9 +1,8 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb, createSectionsAndLecturesInDb, getSectionsAndLecturesByCourseIdFromDb, upsertSectionsAndLecturesInDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb, createSectionsAndLecturesInDb, getSectionsAndLecturesByCourseIdFromDb, upsertSectionsAndLecturesInDb, getEnrolledCoursesForUserFromDb, getAuthoredCoursesForInstructorFromDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
 import { CourseFormData, CreateCourseDbInput, Instructor } from "@/utils/types";
-import { ApiResponse } from "@/utils/apiResponse";
 
 export const getCoursesCard = cache(async (options: { limit?: number, offset?: number }) => {
     const { limit, offset } = options;
@@ -152,25 +151,35 @@ export async function createSectionsAndLecturesDAL(courseId: string, sectionsInp
     return await createSectionsAndLecturesInDb(courseId, sectionsInput);
 }
 export const getSectionsAndLecturesByCourseId = cache(async (courseId: string) => {
-  return await getSectionsAndLecturesByCourseIdFromDb(courseId);
+    return await getSectionsAndLecturesByCourseIdFromDb(courseId);
 });
 
 export const upsertSectionsAndLecturesDAL = cache(async (courseId: string, sectionsInput: any[]) => {
-  try {
-    // Validate courseId
-    if (!courseId || typeof courseId !== "string") {
-      return { success: false, error: "Valid course ID is required" };
-    }
+    try {
+        // Validate courseId
+        if (!courseId || typeof courseId !== "string") {
+            return { success: false, error: "Valid course ID is required" };
+        }
 
-    // Validate sections input
-    if (!sectionsInput || !Array.isArray(sectionsInput) || sectionsInput.length === 0) {
-      return { success: false, error: "At least one section is required" };
-    }
+        // Validate sections input
+        if (!sectionsInput || !Array.isArray(sectionsInput) || sectionsInput.length === 0) {
+            return { success: false, error: "At least one section is required" };
+        }
 
-    const result = await upsertSectionsAndLecturesInDb(courseId, sectionsInput);
-    return result;
-  } catch (error) {
-    console.error("DAL Error in upsertSectionsAndLecturesDAL:", error);
-    return { success: false, error: error instanceof Error ? error.message : String(error) };
-  }
+        const result = await upsertSectionsAndLecturesInDb(courseId, sectionsInput);
+        return result;
+    } catch (error) {
+        console.error("DAL Error in upsertSectionsAndLecturesDAL:", error);
+        return { success: false, error: error instanceof Error ? error.message : String(error) };
+    }
+});
+
+export const getEnrolledCoursesForUser = cache(async (userId: string) => {
+    return await getEnrolledCoursesForUserFromDb(userId);
+
+});
+
+export const getAuthoredCoursesForInstructor = cache(async (authorId: string) => {
+    return await getAuthoredCoursesForInstructorFromDb(authorId);
+
 });

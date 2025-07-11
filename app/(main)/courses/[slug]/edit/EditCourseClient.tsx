@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import CourseForm from "../../_component/CourseForm";
+import CourseForm from "../../_components/CourseForm";
 import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
 import { updateCourseAction } from "../../_actions/action";
 import { useAuth } from "@/lib/auth/use-session";

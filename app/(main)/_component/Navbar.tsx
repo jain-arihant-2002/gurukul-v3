@@ -235,7 +235,7 @@ export function Navbar() {
                     <NavbarLinks />
                 </div>
                 <div className="flex items-center gap-4">
-                    <NavbarSearch />
+                    {/* <NavbarSearch /> */}
                     <NavbarAuth />
                     <ThemeToggle />
                 </div>

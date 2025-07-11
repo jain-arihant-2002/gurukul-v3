@@ -156,7 +156,7 @@ export const lectures = pgTable("lectures", {
   type: lectureTypeEnum("type").notNull(),
   durationInSeconds: integer("duration_in_seconds").default(0).notNull(),
   isFreePreview: boolean("is_free_preview").default(false).notNull(),
-  videoUrl: text("video_url"),
+  videoPublicId: text("video_public_id"), // For video lectures, this is the public ID of the video in Cloudinary
   articleContentHtml: text("article_content_html"),
   sectionId: text("section_id").notNull().references(() => sections.id, { onDelete: "cascade" }),
 });

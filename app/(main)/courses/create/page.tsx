@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import CourseForm from "../_component/CourseForm";
+import CourseForm from "../_components/CourseForm";
 import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth/use-session";

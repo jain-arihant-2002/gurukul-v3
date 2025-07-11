@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Star, Clock, Users, BookOpen } from "lucide-react";
 import Link from "next/link";
-import type { CourseCard } from "@/utils/types";
+import type { CourseCard, CourseStatus } from "@/utils/types";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -13,6 +13,18 @@ function formatDate(dateString: string) {
 
 
 export default function CourseCard({ course }: { course: CourseCard; }) {
+  const getStatusBadgeVariant = (status?: CourseStatus) => {
+    switch (status) {
+      case 'published':
+        return 'default';
+      case 'archived':
+        return 'destructive';
+      case 'draft':
+      default:
+        return 'secondary';
+    }
+  };
+
   const renderStars = (rating: number) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
@@ -28,8 +40,8 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
         {hasHalfStar && (
           <div className="relative">
             <Star className="w-4 h-4 text-gray-300" />
-            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 absolute top-0 left-0" 
-                  style={{ clipPath: 'inset(0 50% 0 0)' }} />
+            <Star className="w-4 h-4 fill-yellow-400 text-yellow-400 absolute top-0 left-0"
+              style={{ clipPath: 'inset(0 50% 0 0)' }} />
           </div>
         )}
         {/* Empty stars */}
@@ -48,15 +60,23 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
       <CardHeader className="p-0">
         <div className="relative w-full h-40 rounded-t-md overflow-hidden">
           <img
-            src={course.coverImage || "/placeholder-image.png"} 
+            src={course.coverImage || "/placeholder-image.png"}
             alt={course.title}
             className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
             style={{ objectFit: "cover", width: "100%", height: "100%" }}
           />
-          
+
           {/* Level Badge */}
-          <Badge 
-            variant="secondary" 
+          {course.status && course.status !== 'published' && (
+            <Badge
+              variant={getStatusBadgeVariant(course.status)}
+              className="bg-background/90 backdrop-blur-sm text-xs font-semibold capitalize"
+            >
+              {course.status}
+            </Badge>
+          )}
+          <Badge
+            variant="secondary"
             className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm text-foreground text-xs font-semibold"
           >
             {course.level}
@@ -68,8 +88,8 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
               <h3 className="font-semibold mb-2 text-sm">{course.title}</h3>
               <p className="text-xs text-gray-200 line-clamp-4 leading-relaxed">
                 {/* Show short description or truncated content */}
-                {course.shortDescription || 
-                 "Discover comprehensive lessons designed to help you master new skills and advance your career. Join thousands of students already learning with this course."}
+                {course.shortDescription ||
+                  "Discover comprehensive lessons designed to help you master new skills and advance your career. Join thousands of students already learning with this course."}
               </p>
               <div className="mt-3 flex items-center justify-center gap-4 text-xs text-gray-300">
                 <div className="flex items-center gap-1">

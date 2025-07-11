@@ -1,11 +1,7 @@
 import {
   ChevronDownIcon,
   LogOutIcon,
-  BoltIcon,
-  BookOpenIcon,
-  Layers2Icon,
-  PinIcon,
-  UserPenIcon,
+  LayoutDashboardIcon,
 } from "lucide-react"
 
 import {
@@ -23,6 +19,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import Link from "next/link"
 
 export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, onLogout }: { avatarSrc: string, avatarAlt: string, fullname: string, email: string, onLogout: () => void }) {
   return (
@@ -50,12 +47,14 @@ export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, on
           </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {/* <DropdownMenuGroup>
+        <DropdownMenuGroup>
           <DropdownMenuItem>
-            <BoltIcon size={16} className="opacity-60" aria-hidden="true" />
-            <span>Option 1</span>
+            <Link href={"/dashboard"} className="flex items-center gap-2">
+              <LayoutDashboardIcon size={16} className="opacity-60" aria-hidden="true" />
+              <span>Dashboard</span>
+            </Link>
           </DropdownMenuItem>
-          <DropdownMenuItem>
+          {/*<DropdownMenuItem>
             <Layers2Icon size={16} className="opacity-60" aria-hidden="true" />
             <span>Option 2</span>
           </DropdownMenuItem>
@@ -73,10 +72,10 @@ export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, on
           <DropdownMenuItem>
             <UserPenIcon size={16} className="opacity-60" aria-hidden="true" />
             <span>Option 5</span>
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
         </DropdownMenuGroup>
-        <DropdownMenuSeparator /> */}
-        <DropdownMenuItem  onClick={onLogout}>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={onLogout}>
           <LogOutIcon size={16} className="opacity-60" aria-hidden="true" />
           <span>Logout</span>
         </DropdownMenuItem>

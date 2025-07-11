@@ -6,15 +6,15 @@ import * as z from "zod";
 import { getAuth } from "@/lib/auth/session";
 import { revalidatePath } from "next/cache";
 
-// Define Zod schema for form validation
+// Validation schemas (match client)
 const lectureSchema = z.object({
     id: z.string(),
     title: z.string().min(1, "Lecture title is required"),
-    type: z.enum(["video", "article", "quiz"]),
+    type: z.enum(["video"]), // Only allow "video" for now
     order: z.number(),
     isFreePreview: z.boolean(),
-    videoUrl: z.string().optional(),
-    articleContentHtml: z.string().optional(),
+    videoPublicId: z.string().min(1, "Video public ID is required"),
+    // articleContentHtml: z.string().optional(), // Commented for now
 });
 
 const sectionSchema = z.object({
@@ -29,6 +29,7 @@ const formSchema = z.object({
     sections: z.array(sectionSchema).min(1, "At least one section is required"),
 });
 
+// Fetch sections and lectures for a course
 export async function getSectionsAndLecturesAction(courseId: string) {
     try {
         if (!courseId || typeof courseId !== "string") {
@@ -51,7 +52,7 @@ export async function getSectionsAndLecturesAction(courseId: string) {
         }
 
         const data = await getSectionsAndLecturesByCourseId(courseId);
-        
+
         return ApiResponse(data || [], 200, "Sections and lectures fetched successfully");
     } catch (error) {
         console.error("Error in getSectionsAndLecturesAction:", error);
@@ -59,7 +60,8 @@ export async function getSectionsAndLecturesAction(courseId: string) {
     }
 }
 
-export async function upsertSectionsAndLecturesAction(courseId: string, data: unknown,courseSlug: string) {
+// Upsert sections and lectures for a course
+export async function upsertSectionsAndLecturesAction(courseId: string, data: unknown, courseSlug: string) {
     try {
         const validated = formSchema.safeParse(data);
 
@@ -88,13 +90,13 @@ export async function upsertSectionsAndLecturesAction(courseId: string, data: un
             return ApiResponses.forbidden("You do not have permission to modify this course.");
         }
 
-        // Use DAL to upsert sections and lectures
+        // Upsert sections and lectures
         const result = await upsertSectionsAndLecturesDAL(courseId, validated.data.sections);
 
         if (!result.success) {
             return ApiResponses.internalServerError(result.error || "Failed to save sections and lectures");
         }
-        revalidatePath(`/courses/${courseSlug}`)
+        revalidatePath(`/courses/${courseSlug}`);
         return ApiResponse(result, 200, "Sections and lectures saved successfully");
 
     } catch (error) {

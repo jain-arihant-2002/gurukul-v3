@@ -10,6 +10,8 @@ import { getCourseBySlug } from "@/lib/dal";
 import { Star, Users, Globe, Clock, CheckCircle, BookOpen, AlertCircle, Calendar } from "lucide-react";
 import CourseStatusBadge from "./_components/CourseDetailBtn";
 import CourseActionPanel from "./_components/CourseActionPanel";
+import { getCloudinaryVideoUrl } from "@/utils/helperFunctions";
+import { getAuth } from "@/lib/auth/session";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -52,10 +54,13 @@ function renderStars(rating: number) {
 }
 
 export default async function CourseDetailPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
-  const course = await getCourseBySlug(slug, 'published');
 
-  if (!course) {
+  const { user } = await getAuth()
+
+  const { slug } = await params;
+  const course = await getCourseBySlug(slug);
+
+  if ((course?.authorId !== user?.id && course?.status === 'draft') || !course) {
     return (
       <div className="w-[80%] min-h-[80vh] mx-auto my-12 text-center text-destructive text-xl">
         Course not found.
@@ -251,11 +256,11 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
             Course Content
           </h2>
           <div className="mb-4 text-sm text-muted-foreground">
-            {course.sections.length} sections • {course.sections.reduce((acc, section) => acc + section.lectures.length, 0)} lectures • {course.totalDurationHours} total length
+            {(course?.sections?.length ?? 0)} sections • {(course?.sections?.reduce((acc, section) => acc + (section.lectures?.length ?? 0), 0) ?? 0)} lectures • {(course?.totalDurationHours ?? 0)} total length
           </div>
 
           <Accordion type="multiple" className="mb-8">
-            {visibleSections.map((section, idx) => (
+            {(visibleSections ?? []).map((section, idx) => (
               <AccordionItem
                 key={idx}
                 value={`section-${idx}`}
@@ -265,13 +270,13 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                   <div className="flex items-center justify-between w-full mr-4">
                     <span>{section.title}</span>
                     <span className="text-sm text-muted-foreground font-normal">
-                      {section.lectures.length} lectures
+                      {(section.lectures?.length ?? 0)} lectures
                     </span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent className="px-4 py-3 border-t border-border bg-background rounded-b-lg">
                   <ul className="space-y-2">
-                    {section.lectures.map((video, vIdx) => (
+                    {section.lectures?.map((video, vIdx) => (
                       <li
                         key={vIdx}
                         className="flex items-center justify-between gap-2"
@@ -291,7 +296,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
                           )}
                         </div>
                         {video.isFreePreview ? (
-                          <VideoPlayerModalWrapper videoUrl={video.videoUrl ?? ''} videoTitle={video.title} />
+                          <VideoPlayerModalWrapper videoUrl={getCloudinaryVideoUrl(video.videoPublicId ?? '')} videoTitle={video.title} />
                         ) : (
                           <Button size="sm" variant="secondary" disabled>
                             Locked
@@ -311,7 +316,7 @@ export default async function CourseDetailPage({ params }: { params: Promise<{ s
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">About this course</h2>
             <div
-              className="prose prose-neutral max-w-none dark:prose-invert"
+              className="prose prose-neutral max-w-none dark:prose-invert break-words"
               dangerouslySetInnerHTML={{ __html: course.longDescriptionHtml }}
             />
           </div>
