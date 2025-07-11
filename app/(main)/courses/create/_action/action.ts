@@ -97,7 +97,8 @@ export async function upsertSectionsAndLecturesAction(courseId: string, data: un
         if (!result.success) {
             return ApiResponses.internalServerError(result.error || "Failed to save sections and lectures");
         }
-        revalidatePath(`/courses/${courseSlug}`);
+        revalidatePath(`/`, 'layout');
+        // revalidatePath(`/courses/${courseSlug}`);
         return ApiResponse(result, 200, "Sections and lectures saved successfully");
 
     } catch (error) {

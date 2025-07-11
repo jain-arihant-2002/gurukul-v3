@@ -44,10 +44,10 @@ export async function createCourseAction(formData: CourseFormData) {
     if (result.error) {
         return ApiResponse(result.data, result.status, result.error)
     }
-    revalidatePath("/courses", "layout");
+    revalidatePath("/", "layout");
 
-    if (result.data?.status === 'published')
-        revalidatePath('/instructors', 'layout');
+    // if (result.data?.status === 'published')
+    //     revalidatePath('/instructors', 'layout');
 
     return ApiResponses.created(result.data, "Course created successfully");
 }
@@ -90,14 +90,14 @@ export async function updateCourseAction(formData: CourseFormData) {
 
     //This is extremely inefficient, but we need to revalidate the course page and the courses list as stable version don't support revalidationTag .Todo: If stable version supports revalidationTag, we can use that instead
     // After update
-    if (
-        (result.data?.status === 'published' && course.status !== 'published') //published
-        ||
-        (result.data?.status !== 'published' && course.status === 'published')//unpublished
-    )
-        revalidatePath("/courses", "layout");
+    // if (
+    //     (result.data?.status === 'published' && course.status !== 'published') //published
+    //     ||
+    //     (result.data?.status !== 'published' && course.status === 'published')//unpublished
+    // )
+    //     revalidatePath("/courses", "layout");
 
-    revalidatePath("/instructors", "layout");
+    revalidatePath("/", "layout");
 
     return ApiResponse(result.data, 200, "Course created successfully");
 }
@@ -111,7 +111,8 @@ export async function freeCoursePurchaseAction(courseId: string) {
 
     if (result.error)
         return ApiResponses.internalServerError();
-    revalidatePath(`/courses`, 'layout');
+    revalidatePath(`/`, 'layout');
+    // revalidatePath(`/courses`, 'layout');
     return ApiResponses.success(null, "Course purchased successfully");
 
 

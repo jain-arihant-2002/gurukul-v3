@@ -43,6 +43,7 @@ export default function AddCoursePage() {
         toast.error(result.message);
         return
       }
+       router.refresh(); 
       if (result.success && result.data?.status === 'published') {
         toast.success("Course created successfully!");
         router.push(`/courses/${result.data?.slug}`);

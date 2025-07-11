@@ -46,7 +46,8 @@ export async function POST(req: NextRequest) {
             return new NextResponse("Webhook Error: Could not update database.", { status: 500 });
         }
         if (result.success)
-            revalidatePath(`/courses`, 'layout');
+            revalidatePath(`/`, 'layout');
+            // revalidatePath(`/courses`, 'layout');
 
 
         console.log(`Successfully fulfilled order for userId: ${userId}, courseId: ${courseId}`);

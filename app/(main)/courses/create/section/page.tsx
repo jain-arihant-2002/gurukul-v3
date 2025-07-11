@@ -966,7 +966,7 @@ function SectionLectureManagerContent() {
                 toast.error(result.message || "Failed to save sections and lectures.");
                 return;
             }
-
+            router.refresh();
             toast.success(hasExistingData ? "Course structure updated successfully!" : "Course structure created successfully!");
             router.push(`/courses/${courseSlug}`);
 

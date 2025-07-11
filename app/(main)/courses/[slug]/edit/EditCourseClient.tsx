@@ -40,7 +40,7 @@ export default function EditCourseClient({ initialData }: { initialData: CourseF
                 toast.error(result.message);
                 return;
             }
-
+            router.refresh();
             toast.success("Course updated successfully!");
             if (result.data?.status === 'published')
                 router.push(`/courses/${result.data?.slug}`);

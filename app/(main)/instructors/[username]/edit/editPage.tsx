@@ -15,11 +15,11 @@ export default function EditTeacherProfilePage({ initialData }: { initialData: P
     setIsSubmitting(true);
     try {
       const result = await updateInstructorProfileAction({ ...data, id: initialData.id });
-
       if (result?.error) {
         toast.error(result.message || "Failed to update instructor profile.");
         return;
       } else {
+        router.refresh();
         toast.success("Instructor profile updated successfully!");
         // Redirect to the instructor's profile page
         router.push(`/instructors`);

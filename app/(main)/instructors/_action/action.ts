@@ -39,7 +39,8 @@ export async function createInstructorProfileAction(data: InstructorFormInput) {
 
         if (result.error)
             return ApiResponse(result.data, result.status, result.error);
-        revalidatePath('/instructors', 'layout');
+        revalidatePath('/', 'layout');
+        // revalidatePath('/instructors', 'layout');
         return ApiResponse(result, 201, "Instructor profile created successfully");
 
     } catch (error) {
@@ -67,7 +68,8 @@ export async function updateInstructorProfileAction(data: InstructorFormInput) {
         const result = await updateInstructorProfile({ ...data, id: instructor.data?.id || '' });
         if (result.error)
             return ApiResponse(result.data, result.status, result.error);
-        revalidatePath('/instructors', 'layout');
+        revalidatePath('/', 'layout');
+        // revalidatePath('/instructors', 'layout');
         return ApiResponse(result.data, 200, "Instructor profile updated successfully");
 
     } catch (error) {

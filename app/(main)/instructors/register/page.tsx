@@ -31,6 +31,7 @@ const RegisterTeacherPage = () => {
             if (result?.error) {
                 toast.error(result.message || "Failed to create instructor profile.");
             } else {
+                router.refresh();
                 //maybe this is causing race condition needs more testing
                 refetch(); //So that the session is updated with the new instructor role
                 await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for session to update
