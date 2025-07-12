@@ -1,6 +1,6 @@
 # Gurukul: A Production-Ready Learning Management System
 
-*   **Live Demo:** `[Gurukul Live Demo](https://gurukul-v3.vercel.app/)`
+*   **Live Demo:** [Gurukul Live Demo](https://gurukul-v3.vercel.app/)
 *   **Keywords:** Next.js, App Router, Drizzle ORM, PostgreSQL, Stripe, Cloudinary, Server Actions, shadcn/ui, TypeScript, Production-Ready
 
 ## 1. Project Philosophy & Architectural Goals
