@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import Link from "next/link"
 
-export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, onLogout }: { avatarSrc: string, avatarAlt: string, fullname: string, email: string, onLogout: () => void }) {
+export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, role, onLogout }: { avatarSrc: string, avatarAlt: string, fullname: string, email: string, role: string, onLogout: () => void }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,15 +45,18 @@ export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, on
           <span className="text-muted-foreground truncate text-xs font-normal">
             {email || 'user@email.com'}
           </span>
+          <span className="text-muted-foreground truncate text-xs font-normal">
+            {role}
+          </span>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <Link href={"/dashboard"} className="flex items-center gap-2">
-            <DropdownMenuItem>
+          <DropdownMenuItem asChild>
+            <Link href={"/dashboard"} className="flex items-center gap-2">
               <LayoutDashboardIcon size={16} className="opacity-60" aria-hidden="true" />
               <span>Dashboard</span>
-            </DropdownMenuItem>
-          </Link>
+            </Link>
+          </DropdownMenuItem>
           {/*<DropdownMenuItem>
             <Layers2Icon size={16} className="opacity-60" aria-hidden="true" />
             <span>Option 2</span>
@@ -80,6 +83,6 @@ export default function UserDropDown({ avatarSrc, avatarAlt, fullname, email, on
           <span>Logout</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
-    </DropdownMenu>
+    </DropdownMenu >
   )
 }

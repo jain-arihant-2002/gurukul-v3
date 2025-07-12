@@ -13,7 +13,7 @@ import { useRouter } from "next/navigation";
 
 export function Navbar() {
     const router = useRouter()
-    const { session } = useAuth()
+    const { session, user } = useAuth()
 
     const logOut = async () => {
         await authClient.signOut({
@@ -150,7 +150,7 @@ export function Navbar() {
                 </Button>
             </Link>
         ) : (
-            <UserDropDown avatarSrc={session.user.image || '/placeholder-avatar.png'} avatarAlt={session.user.name.charAt(0)} fullname={session.user.name} email={session.user.email} onLogout={logOut} />
+            <UserDropDown avatarSrc={session.user.image || '/placeholder-avatar.png'} avatarAlt={session.user.name.charAt(0)} fullname={session.user.name} role={user?.role ?? 'Student'} email={session.user.email} onLogout={logOut} />
             // <Button
             //     variant="destructive"
             //     onClick={logOut}
