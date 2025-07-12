@@ -89,6 +89,7 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
             whatWillYouLearn: initialData?.whatWillYouLearn || [],
             prerequisites: initialData?.prerequisites || [],
             coverImage: initialData?.coverImage || "",
+            totalDurationHours: initialData?.totalDurationHours || 0,
         },
     });
 
@@ -262,6 +263,77 @@ export default function CourseForm({ mode, initialData, onSubmit, isSubmitting }
         }
     };
 
+    // Auto-scroll to first error field
+    const scrollToError = () => {
+        const errors = form.formState.errors;
+        const errorFields = Object.keys(errors);
+        
+        if (errorFields.length === 0) return;
+
+        const firstErrorField = errorFields[0];
+        
+        // Map form field names to their corresponding DOM element IDs
+        const fieldIdMap: Record<string, string> = {
+            title: "course-title",
+            slug: "course-slug", 
+            shortDescription: "course-short-description",
+            longDescriptionHtml: "course-long-description",
+            price: "course-price",
+            language: "course-language",
+            level: "course-level",
+            status: "course-status",
+            categories: "course-categories",
+            whatWillYouLearn: "course-what-will-you-learn",
+            prerequisites: "course-prerequisites",
+            coverImage: "cover-image",
+            totalDurationHours: "course-total-duration",
+        };
+
+        const elementId = fieldIdMap[firstErrorField];
+        
+        if (elementId) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                // Scroll to element with smooth behavior and offset for header
+                element.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Focus the element after a brief delay
+                setTimeout(() => {
+                    element.focus();
+                }, 300);
+            }
+        }
+    };
+
+    // Handle form submission
+    const handleFormSubmit = async (data: CourseFormData) => {
+        try {
+            await onSubmit(data);
+        } catch (error) {
+            // If submission fails, scroll to first error
+            setTimeout(() => {
+                scrollToError();
+            }, 100);
+        }
+    };
+
+    // Simple form submission handler
+    const onSubmitWrapper = form.handleSubmit(
+        // Valid submission handler
+        handleFormSubmit,
+        // Invalid submission handler (validation errors)
+        () => {
+            // Scroll to error when validation fails
+            setTimeout(() => {
+                scrollToError();
+            }, 100);
+        }
+    );
+
+    // Reset form
     const resetForm = () => {
         if (mode === 'create') {
             form.reset();

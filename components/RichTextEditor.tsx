@@ -10,20 +10,20 @@ import TextStyle from '@tiptap/extension-text-style'
 import Color from '@tiptap/extension-color'
 import Highlight from '@tiptap/extension-highlight'
 import DropCursor from '@tiptap/extension-dropcursor'
-import { 
-  Bold, 
-  Italic, 
-  Underline as UnderlineIcon, 
-  Strikethrough, 
-  List, 
-  ListOrdered, 
-  Quote, 
-  Code, 
-  Undo, 
-  Redo, 
-  AlignLeft, 
-  AlignCenter, 
-  AlignRight, 
+import {
+  Bold,
+  Italic,
+  Underline as UnderlineIcon,
+  Strikethrough,
+  List,
+  ListOrdered,
+  Quote,
+  Code,
+  Undo,
+  Redo,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
   AlignJustify,
   Link as LinkIcon,
   Image as ImageIcon,
@@ -80,6 +80,7 @@ export default function RichTextEditor({
       }),
     ],
     content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       onChange?.(editor.getHTML())
     },
@@ -125,9 +126,9 @@ export default function RichTextEditor({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
-    
+
     const files = Array.from(e.dataTransfer.files)
-    
+
     files.forEach(file => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader()
@@ -373,21 +374,20 @@ export default function RichTextEditor({
       </div>
 
       {/* Editor content */}
-      <div 
-        className={`p-4 min-h-[200px] relative transition-all duration-200 overflow-auto ${
-          isDragOver ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-600' : ''
-        }`}
+      <div
+        className={`p-4 min-h-[200px] relative transition-all duration-200 overflow-auto ${isDragOver ? 'bg-blue-50 dark:bg-blue-950/20 border-blue-300 dark:border-blue-600' : ''
+          }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onDragEnter={handleDragEnter}
         onDragLeave={handleDragLeave}
       >
-        <EditorContent 
+        <EditorContent
           editor={editor}
           className="prose prose-sm prose-neutral dark:prose-invert max-w-none focus:outline-none [&_.ProseMirror]:outline-none"
           placeholder={placeholder}
         />
-        
+
         {/* Drag overlay */}
         {isDragOver && (
           <div className="absolute inset-0 border-2 border-dashed border-blue-400 dark:border-blue-500 rounded bg-blue-50/50 dark:bg-blue-950/30 flex items-center justify-center pointer-events-none">
@@ -397,7 +397,7 @@ export default function RichTextEditor({
             </div>
           </div>
         )}
-        
+
         {/* Drag hint when not dragging */}
         {!isDragOver && (
           <div className="absolute inset-0 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-200">

@@ -38,8 +38,10 @@ export default async function EditCoursePage({ params }: { params: Promise<{ slu
         whatWillYouLearn: course.whatWillYouLearn,
         prerequisites: course.prerequisites || [],
         coverImage: course.coverImage || "",
-        createdAt:course.createdAt ? new Date(course.createdAt) : undefined,
+        createdAt: course.createdAt ? new Date(course.createdAt) : undefined,
         authorId: course.authorId,
+        totalDurationHours: course.totalDurationHours
+
     };
 
     return <EditCourseClient initialData={formData} />;

@@ -280,7 +280,9 @@ export type CourseFormData = {
   coverImage?: string;
   createdAt?: Date; // used for updated courses
   authorId: string;
+  totalDurationHours: number; // default 0
 };
+
 
 export type CreateCourseDbInput = {
   id: string;

@@ -140,11 +140,11 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
 
         {/* Rating */}
         <div className="flex items-center justify-between">
-          {renderStars(course.rating)}
+        {/*   {renderStars(course.rating)}*/}
           <span className="text-sm text-muted-foreground">
             {course.enrollmentCount || 0} students
           </span>
-        </div>
+        </div> 
 
         {/* Price */}
         <div className="mt-auto">

@@ -45,7 +45,7 @@
 *   **Flow:** The payment flow is robust and secure, designed to handle transactions without compromising user data or application integrity.
     1.  The client-side `PurchaseButton` requests a checkout session from the `/api/stripe/checkout-session` API route.
     2.  This server-side route validates the user's session and the course, then securely creates a Stripe Checkout session with the `userId` and `courseId` embedded in the metadata.
-    3.  The client is redirected to the Stripe-hosted checkout page.
+    3.  The client is redirected to the Stripe-hosted checkout page. (use 424242424242 as card number and any data in rest of field to test payments.)
     4.  Upon successful payment, Stripe sends a `checkout.session.completed` event to the `/api/webhooks/stripe` endpoint.
     5.  This webhook handler verifies the request's authenticity using a signing secret, then calls the `fulfillCoursePurchase` function in the DAL. This function atomically creates the `enrollment` and `purchase` records in the database and increments the course's `enrollmentCount`.
 

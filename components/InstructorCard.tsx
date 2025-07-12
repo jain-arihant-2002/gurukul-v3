@@ -25,11 +25,16 @@ export function InstructorCard({ instructor }: { instructor: InstructorCard }) {
         </CardHeader>
         <CardTitle className="text-lg font-semibold">{instructor.name}</CardTitle>
         <div className="flex flex-wrap justify-center gap-1 mt-2 max-w-[220px] mx-auto">
-          {(instructor.expertise).map((tag, idx) => (
-            <Badge key={idx} variant="secondary" className="text-xs truncate " title={tag}>
+          {(instructor.expertise).slice(0, 5).map((tag, idx) => (
+            <Badge key={idx} variant="secondary" className="text-xs truncate" title={tag}>
               {tag}
             </Badge>
           ))}
+          {instructor.expertise.length > 5 && (
+            <Badge variant="outline" className="text-xs">
+              +{instructor.expertise.length - 5}
+            </Badge>
+          )}
         </div>
         <CardContent className="flex flex-col flex-1 justify-between w-full">
           <p className="text-muted-foreground text-sm mb-2">{instructor.bio}</p>
