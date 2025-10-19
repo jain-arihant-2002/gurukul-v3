@@ -865,3 +865,38 @@ export const getUserDataFromDb = cache(async (userId: string) => {
     }
     return data;
 })
+
+
+export const getAllPublishedCourseSlugsFromDb = cache(async () => {
+    const { data, error } = await tryCatch(
+        db.select({
+            slug: courses.slug
+        }).from(courses).where(eq(courses.status, "published"))
+    );
+
+    if (error) {
+        console.error("Error fetching course slugs:", error);
+        return [];
+    }
+    return data ?? [];
+});
+
+export const getAllActiveInstructorUsernamesFromDb = cache(async () => {
+    const { data, error } = await tryCatch(
+        db.select({
+            username: user.username
+        })
+        .from(instructors)
+        .innerJoin(user, eq(instructors.id, user.id))
+        .where(and(
+            eq(user.role, "instructor"),
+            gt(instructors.coursesCount, 0)
+        ))
+    );
+
+    if (error) {
+        console.error("Error fetching instructor usernames:", error);
+        return [];
+    }
+    return data ?? [];
+});

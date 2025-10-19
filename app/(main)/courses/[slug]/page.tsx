@@ -6,12 +6,25 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 import VideoPlayerModalWrapper from "@/components/VideoPlayerModal";
-import { getCourseBySlug } from "@/lib/dal";
+import { getAllPublishedCourseSlugs, getCourseBySlug } from "@/lib/dal";
 import { Star, Users, Globe, Clock, CheckCircle, BookOpen, AlertCircle, Calendar } from "lucide-react";
 import CourseStatusBadge from "./_components/CourseDetailBtn";
 import CourseActionPanel from "./_components/CourseActionPanel";
 import { getCloudinaryVideoUrl } from "@/utils/helperFunctions";
 import { getAuth } from "@/lib/auth/session";
+
+
+
+export async function generateStaticParams() {
+  const slugs = await getAllPublishedCourseSlugs();
+
+  return slugs.map(({ slug }) => ({
+    slug
+  }));
+}
+
+
+
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);

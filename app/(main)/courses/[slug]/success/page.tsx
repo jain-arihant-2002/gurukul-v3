@@ -3,7 +3,8 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function CoursePurchaseSuccessPage({ params }: { params: { slug: string } }) {
+export default async function CoursePurchaseSuccessPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md shadow-lg">
@@ -18,7 +19,7 @@ export default function CoursePurchaseSuccessPage({ params }: { params: { slug: 
             Thank you for your purchase. You now have full access to this course.
           </p>
           <Button asChild className="w-full mt-2">
-            <Link href={`/courses/${params.slug}`}>
+            <Link href={`/courses/${slug}`}>
               Go to Course
             </Link>
           </Button>

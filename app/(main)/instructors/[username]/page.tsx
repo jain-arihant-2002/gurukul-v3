@@ -3,10 +3,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import CourseCard from "@/components/CourseCard";
-import { getInstructorByUsername } from "@/lib/dal";
+import { getAllActiveInstructorUsernames, getInstructorByUsername } from "@/lib/dal";
 import { Twitter, Linkedin, Github, Globe, Users, BookOpen, Calendar } from "lucide-react";
 import EditProfileBtn from "./_component/editProfileBtn";
 import Link from "next/link";
+
+export async function generateStaticParams() {
+  const usernames = await getAllActiveInstructorUsernames();
+
+  return usernames.map(({ username }) => ({
+    username,
+  }));
+}
 
 export default async function InstructorDetailPage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -117,7 +125,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                       <Card className="text-center">
                         <CardContent className="pt-4 pb-4">
                           <BookOpen className="w-6 h-6 text-primary mx-auto mb-2" />
-                        <p className="text-2xl font-bold text-primary">{instructor.coursesCount}</p>
+                          <p className="text-2xl font-bold text-primary">{instructor.coursesCount}</p>
                           <p className="text-sm text-muted-foreground">Courses</p>
                         </CardContent>
                       </Card>

@@ -1,4 +1,4 @@
-import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb, createSectionsAndLecturesInDb, getSectionsAndLecturesByCourseIdFromDb, upsertSectionsAndLecturesInDb, getEnrolledCoursesForUserFromDb, getAuthoredCoursesForInstructorFromDb, getUserDataFromDb } from "@/lib/data/queries"
+import { getCourseBySlugFromDb, getPublishedCourseCardFromDb, getPublishedInstructorCardFromDb, getTotalCoursesCountFromDb, getTotalInstructorsCountFromDb, getInstructorByUsernameFromDb, createCourseInDb, updateCourseInDb, getCourseByIdFromDb, updateInstructorProfileInDb, getInstructorByIdFromDb, createInstructorProfileInDb, fulfillCoursePurchaseInDb, getEnrollmentForUserAndCourseFromDb, getLectureWithCourseIdFromDb, createSectionsAndLecturesInDb, getSectionsAndLecturesByCourseIdFromDb, upsertSectionsAndLecturesInDb, getEnrolledCoursesForUserFromDb, getAuthoredCoursesForInstructorFromDb, getUserDataFromDb, getAllPublishedCourseSlugsFromDb, getAllActiveInstructorUsernamesFromDb } from "@/lib/data/queries"
 import { nanoid } from "nanoid";
 import { cache } from "react";
 import { sanitize } from "./security";
@@ -186,5 +186,15 @@ export const getAuthoredCoursesForInstructor = cache(async (authorId: string) =>
 
 export const getUserData = cache(async (authorId: string) => {
     return await getUserDataFromDb(authorId);
+
+});
+
+export const getAllPublishedCourseSlugs = cache(async () => {
+    return await getAllPublishedCourseSlugsFromDb();
+
+});
+
+export const getAllActiveInstructorUsernames = cache(async () => {
+    return await getAllActiveInstructorUsernamesFromDb();
 
 });
