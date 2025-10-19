@@ -3,8 +3,8 @@ import ChooseUs from "./_component/ChooseUs";
 import Hero from "./_component/HeroSection";
 import InstructorList from "./_component/InstructorList";
 import { getCoursesCard, getInstructorCard } from '@/lib/dal';
-import { cleanupData,seedDatabaseWithAllFields } from '@/seed';
-import { updateCourseImages, updateInstructorAvatars } from '@/updateImage';
+/* import { cleanupData,seedDatabaseWithAllFields } from '@/seed';
+import { updateCourseImages, updateInstructorAvatars } from '@/updateImage'; */
 
 export default async function Home() {
   const Courses = await getCoursesCard({ limit: 3 });
