@@ -1,5 +1,3 @@
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import LoadingLinkButton from "@/components/LoadingLinkButton";
 
 export default function Hero() {
@@ -23,7 +21,7 @@ export default function Hero() {
           grow your knowledge in a beautiful, collaborative environment.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <LoadingLinkButton  href="/courses" size="lg">
+          <LoadingLinkButton  href="/courses/page/1" size="lg">
             Browse Courses
           </LoadingLinkButton>
 

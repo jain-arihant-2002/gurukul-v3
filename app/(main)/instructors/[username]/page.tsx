@@ -12,7 +12,6 @@ export default async function InstructorDetailPage({ params }: { params: Promise
   const { username } = await params;
 
   const instructor = await getInstructorByUsername(username);
-  console.log("Instructor Data:", instructor);
   if (!instructor) {
     return (
       <div className="min-h-screen bg-background">

@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import PurchaseButton from "./PurchaseButton";
 import { useAuth } from "@/lib/auth/use-session";
+import LoadingLinkButton from "@/components/LoadingLinkButton";
 
 interface CourseActionPanelProps {
     courseId: string;
@@ -49,7 +49,7 @@ export default function CourseActionPanel({ courseId, courseSlug, price }: Cours
     if (isEnrolled) {
         return (
             <Button asChild className="w-full text-lg font-semibold">
-                <Link href={`/courses/${courseSlug}/learn`}>Go to Course</Link>
+                <LoadingLinkButton href={`/courses/${courseSlug}/learn`}>Go to Course</LoadingLinkButton>
             </Button>
         );
     }

@@ -1,3 +1,4 @@
+import LoadingLinkButton from '@/components/LoadingLinkButton'
 import Link from 'next/link'
 
 export default function NotFound() {
@@ -6,7 +7,7 @@ export default function NotFound() {
       <h1 className="text-4xl inline-block align-center font-medium leading-[49px]">
         Page Not Found 
       </h1>
-      <Link href="/">Return Home</Link>
+      <LoadingLinkButton href="/">Return Home</LoadingLinkButton>
     </div>
   )
 }

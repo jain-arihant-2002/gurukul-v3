@@ -60,8 +60,6 @@ export async function updateCourseAction(formData: CourseFormData) {
     if (!user || (!isAdmin && !isInstructor))
         return ApiResponses.unauthorized("You must be logged in as an instructor or admin to create a course");
 
-    console.log("=== UPDATE COURSE ACTION ===");
-    console.log("Form Data:", formData); // Todo : remove this
     if (!formData.id) {
         return ApiResponses.internalServerError("Something went wrong, course ID is missing");
     }
