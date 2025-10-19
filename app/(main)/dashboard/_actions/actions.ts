@@ -2,12 +2,9 @@
 "use server";
 
 import { getAuth } from "@/lib/auth/session";
-import { db } from "@/db/db";
-import { user } from "@/db/schema";
-import { eq } from "drizzle-orm";
 import { ApiResponses } from "@/utils/apiResponse";
 import { CourseCard, UserRole } from "@/utils/types";
-import { getEnrolledCoursesForUser, getAuthoredCoursesForInstructor } from "@/lib/dal";
+import { getEnrolledCoursesForUser, getAuthoredCoursesForInstructor, getUserData } from "@/lib/dal";
 
 export async function getDashboardData() {
     const { user: sessionUser, isAuthenticated } = await getAuth();
@@ -17,35 +14,38 @@ export async function getDashboardData() {
     }
 
     try {
-        let coursesPromise: Promise<CourseCard[]>;
+        // Prepare promises
+        const userPromise = getUserData(sessionUser.id);
 
-        if (sessionUser.role === UserRole.INSTRUCTOR) {
-            coursesPromise = getAuthoredCoursesForInstructor(sessionUser.id);
-        } else {
-            coursesPromise = getEnrolledCoursesForUser(sessionUser.id);
-        }
-        
-        // Fetch user details and the determined course list in parallel
-        const [userData, coursesData] = await Promise.all([
-            db.query.user.findFirst({
-                where: eq(user.id, sessionUser.id),
-                columns: { name: true, email: true, image: true, createdAt: true },
-            }),
-            coursesPromise
+        const enrolledCoursesPromise: Promise<CourseCard[]> = getEnrolledCoursesForUser(sessionUser.id);
+
+        const authoredCoursesPromise: Promise<CourseCard[]> =
+            sessionUser.role === UserRole.INSTRUCTOR
+                ? getAuthoredCoursesForInstructor(sessionUser.id)
+                : Promise.resolve([]);
+
+        // Fetch in parallel
+        const [userData, enrolledCourses, authoredCourses] = await Promise.all([
+            userPromise,
+            enrolledCoursesPromise,
+            authoredCoursesPromise,
         ]);
 
         if (!userData) {
             return ApiResponses.notFound("User data not found.");
         }
-        
-        const data = {
+
+        const data: any = {
             user: {
                 ...userData,
-                createdAt: userData.createdAt.toISOString()
+                createdAt: userData.createdAt instanceof Date ? userData.createdAt.toISOString() : userData.createdAt,
             },
-            // The key name is generic, but the data source is now role-dependent
-            enrolledCourses: coursesData,
+            enrolledCourses,
         };
+
+        if (sessionUser.role === UserRole.INSTRUCTOR) {
+            data.authoredCourses = authoredCourses;
+        }
 
         return ApiResponses.success(data);
 

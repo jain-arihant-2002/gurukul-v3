@@ -3,14 +3,18 @@ import ChooseUs from "./_component/ChooseUs";
 import Hero from "./_component/HeroSection";
 import InstructorList from "./_component/InstructorList";
 import { getCoursesCard, getInstructorCard } from '@/lib/dal';
-
+import { cleanupData,seedDatabaseWithAllFields } from '@/seed';
+import { updateCourseImages, updateInstructorAvatars } from '@/updateImage';
 
 export default async function Home() {
   const Courses = await getCoursesCard({ limit: 3 });
   const Instructors = await getInstructorCard({ limit: 4 });
 
   console.time("blockingTask");
-  
+  // cleanupData()  
+  // seedDatabaseWithAllFields()  
+  // updateInstructorAvatars()
+  // updateCourseImages()
   console.timeEnd("blockingTask");
   // Todo: Add a loading state or skeleton while fetching data or add logic for suspense
   return (
@@ -37,7 +41,7 @@ export default async function Home() {
             <InstructorList Instructors={Instructors} />
           </div>
         </section>
-        }
+      }
     </>
   );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function CoursePurchaseSuccessPage() {
+export default function CoursePurchaseSuccessPage({ params }: { params: { slug: string } }) {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-full max-w-md shadow-lg">
@@ -18,8 +18,7 @@ export default function CoursePurchaseSuccessPage() {
             Thank you for your purchase. You now have full access to this course.
           </p>
           <Button asChild className="w-full mt-2">
-            {/* Todo make this link to go to course with video page */}
-            <Link href="../"> 
+            <Link href={`/courses/${params.slug}`}>
               Go to Course
             </Link>
           </Button>

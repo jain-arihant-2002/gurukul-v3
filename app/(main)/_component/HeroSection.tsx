@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import LoadingLinkButton from "@/components/LoadingLinkButton";
 
 export default function Hero() {
   return (
@@ -22,12 +23,13 @@ export default function Hero() {
           grow your knowledge in a beautiful, collaborative environment.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Button asChild size="lg">
-            <Link href="/courses">Browse Courses</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link href="/sign-up">Get Started</Link>
-          </Button>
+          <LoadingLinkButton  href="/courses" size="lg">
+            Browse Courses
+          </LoadingLinkButton>
+
+          <LoadingLinkButton asChild href="/sign-up" variant="outline" size="lg">
+            Get Started
+          </LoadingLinkButton>
         </div>
       </div>
     </section>

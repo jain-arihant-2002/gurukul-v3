@@ -851,3 +851,17 @@ export const getAuthoredCoursesForInstructorFromDb = cache(async (authorId: stri
         level: course.level as CourseLevel
     }));
 });
+
+export const getUserDataFromDb = cache(async (userId: string) => {
+    const { data, error } = await tryCatch(
+        
+    db.query.user.findFirst({
+            where: eq(user.id, userId),
+            columns: { name: true, email: true, image: true, createdAt: true },
+        })
+    )
+    if (error) {
+        console.error("Error in getAuthoredCoursesForInstructorFromDb:", error);
+    }
+    return data;
+})

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Star, Clock, Users, BookOpen } from "lucide-react";
 import Link from "next/link";
 import type { CourseCard, CourseStatus } from "@/utils/types";
+import LoadingLinkButton from "./LoadingLinkButton";
 
 function formatDate(dateString: string) {
   const date = new Date(dateString);
@@ -140,11 +141,11 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
 
         {/* Rating */}
         <div className="flex items-center justify-between">
-        {/*   {renderStars(course.rating)}*/}
+          {/*   {renderStars(course.rating)}*/}
           <span className="text-sm text-muted-foreground">
             {course.enrollmentCount || 0} students
           </span>
-        </div> 
+        </div>
 
         {/* Price */}
         <div className="mt-auto">
@@ -159,11 +160,7 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <Button asChild className="w-full group-hover:bg-primary/90 transition-colors">
-          <Link href={`/courses/${course.slug}`}>
-            View Course
-          </Link>
-        </Button>
+        <LoadingLinkButton href={`/courses/${course.slug}`} className="w-full group-hover:bg-primary/90 transition-colors" >View Course</LoadingLinkButton>
       </CardFooter>
     </Card>
   );
