@@ -3,7 +3,7 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -61,15 +61,18 @@ export default function InstructorForm({
   onSubmit,
   isSubmitting
 }: InstructorFormProps) {
-  const { user } = useAuth()
+  const { user, isPending } = useAuth()
   const router = useRouter();
 
   const [expertiseInput, setExpertiseInput] = useState("");
   const [socialPlatform, setSocialPlatform] = useState<SocialPlatform>("twitter");
   const [socialUrl, setSocialUrl] = useState("");
 
-  if (!user)
-    router.push('/sign-in');
+  useEffect(() => {
+    if (!isPending && !user) {
+      router.push('/sign-in');
+    }
+  }, [user, isPending, router]);
 
   const form = useForm<InstructorFormData>({
     resolver: zodResolver(instructorSchema),

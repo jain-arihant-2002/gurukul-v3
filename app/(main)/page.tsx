@@ -10,12 +10,12 @@ export default async function Home() {
   const Courses = await getCoursesCard({ limit: 3 });
   const Instructors = await getInstructorCard({ limit: 4 });
 
-  console.time("blockingTask");
+  // console.time("blockingTask");
   // cleanupData()  
   // seedDatabaseWithAllFields()  
   // updateInstructorAvatars()
   // updateCourseImages()
-  console.timeEnd("blockingTask");
+  // console.timeEnd("blockingTask");
   // Todo: Add a loading state or skeleton while fetching data or add logic for suspense
   return (
     <>
