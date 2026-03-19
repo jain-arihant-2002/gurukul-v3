@@ -495,17 +495,16 @@ export const getInstructorByIdFromDb = cache(async (id: string) => {
 export const fulfillCoursePurchaseInDb = async (
     userId: string,
     courseId: string,
-    amount: string
+    price: string | number
 ) => {
 
     const { data, error } = await tryCatch(
         db.transaction(async (tx) => {
-            // 1. Create the purchase record
             await tx.insert(purchases).values({
-                id: `purch_${nanoid()}`, // as we are only add entry in purchases here.
+                id: `purch_${nanoid()}`,
                 userId,
                 courseId,
-                amount: amount,
+                amount: String(price),
                 paymentStatus: "completed",
             });
 

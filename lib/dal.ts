@@ -105,17 +105,12 @@ export const getInstructorById = async (id: string) => {
 }
 
 export const fulfillCoursePurchase = cache(
-
-
-    async (userId: string, courseId: string, amount: string) => {
-
+    async (userId: string, courseId: string) => {
         const course = await getCourseByIdFromDb(courseId);
         if (!course) {
             console.error("Course not found in fulfillCoursePurchase:", courseId);
             return { success: false, error: "Course not found." };
         }
-        if (course.price !== amount)
-            return { success: false, error: "Price mismatch." };
 
         const isEnrolled = await checkUserEnrollment(userId, courseId);
         if (isEnrolled) {
@@ -123,7 +118,7 @@ export const fulfillCoursePurchase = cache(
             return { success: false, error: "User is already enrolled in this course." };
         }
 
-        const result = await fulfillCoursePurchaseInDb(userId, courseId, amount);
+        const result = await fulfillCoursePurchaseInDb(userId, courseId, course.price);
         if (result.error) {
             console.error("DAL Error in fulfillCoursePurchase:", result.error);
             return { success: false, error: "Failed to fulfill purchase." };

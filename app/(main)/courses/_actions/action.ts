@@ -105,7 +105,7 @@ export async function freeCoursePurchaseAction(courseId: string) {
     if (!user)
         return ApiResponses.unauthorized("You must be logged in to purchase a course");
 
-    const result = await fulfillCoursePurchase(user.id, courseId, '0.00');
+    const result = await fulfillCoursePurchase(user.id, courseId);
 
     if (result.error)
         return ApiResponses.internalServerError();

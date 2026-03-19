@@ -35,10 +35,8 @@ export async function POST(req: NextRequest) {
         }
 
         const { userId, courseId } = session.metadata;
-        const amount = (session.amount_total! / 100).toFixed(2);
 
-        // Call our DAL function
-        const result = await fulfillCoursePurchase(userId, courseId, amount);
+        const result = await fulfillCoursePurchase(userId, courseId);
 
         if (!result.success) {
             console.error("Webhook Error: DAL function failed to fulfill order.", { userId, courseId });
