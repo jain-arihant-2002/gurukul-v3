@@ -1,5 +1,4 @@
 "use server";
-import { getAuth } from "@/lib/auth/session";
 import { createCourse, fulfillCoursePurchase, getCourseById, updateCourse } from "@/lib/dal";
 import { ApiResponse, ApiResponses } from "@/utils/apiResponse";
 import { CourseFormData, CourseLevel, CourseStatus } from "@/utils/types";
@@ -27,91 +26,52 @@ const courseSchema = z.object({
 });
 
 export async function createCourseAction(formData: CourseFormData) {
-
-    const { user, isAdmin, isInstructor } = await getAuth();
-
-    if (!user || (!isAdmin && !isInstructor))
-        return ApiResponses.unauthorized("You must be logged in as an instructor or admin to create a course");
-
     const validated = courseSchema.safeParse(formData);
-
     if (!validated.success)
         return ApiResponses.unprocessableEntity("Invalid input");
 
-
-    // Call DAL function to create the course
-    const result = await createCourse(formData, user.id)
-    if (result.error) {
-        return ApiResponse(result.data, result.status, result.error)
+    const result = await createCourse(formData);
+    if (!result.success) {
+        return ApiResponses.internalServerError(result.error ?? "Unknown error");
     }
     revalidatePath("/", "layout");
-
-    // if (result.data?.status === 'published')
-    //     revalidatePath('/instructors', 'layout');
-
     return ApiResponses.created(result.data, "Course created successfully");
 }
 
 export async function updateCourseAction(formData: CourseFormData) {
-
-    const { user, isAdmin, isInstructor } = await getAuth();
-
-
-    if (!user || (!isAdmin && !isInstructor))
-        return ApiResponses.unauthorized("You must be logged in as an instructor or admin to create a course");
-
     if (!formData.id) {
-        return ApiResponses.internalServerError("Something went wrong, course ID is missing");
+        return ApiResponses.internalServerError("Course ID is missing");
     }
 
-    const course = await getCourseById(formData.id);
-
-    if (!course) {
+    const existingCourse = await getCourseById(formData.id);
+    if (!existingCourse || !existingCourse.id) {
         return ApiResponses.notFound("Course not found");
     }
 
-    if (!isAdmin && (course.authorId !== user.id))
-        return ApiResponses.forbidden("You are not allowed to update this course");
-
     const validated = courseSchema.safeParse(formData);
-
     if (!validated.success)
         return ApiResponses.unprocessableEntity("Invalid input");
 
-
-    // Now perform the update using the course's real id from the DB
-    const result = await updateCourse({ ...formData, id: course.id }, user.id, course.id);
-
-    if (result.error) {
-        return ApiResponse(result.data, result.status, result.error)
+    const result = await updateCourse({ ...formData, id: existingCourse.id }, existingCourse.id);
+    if (!result.success) {
+        if (result.error?.includes("Forbidden")) {
+            return ApiResponses.forbidden(result.error);
+        }
+        return ApiResponses.internalServerError(result.error ?? "Unknown error");
     }
 
-    //This is extremely inefficient, but we need to revalidate the course page and the courses list as stable version don't support revalidationTag .Todo: If stable version supports revalidationTag, we can use that instead
-    // After update
-    // if (
-    //     (result.data?.status === 'published' && course.status !== 'published') //published
-    //     ||
-    //     (result.data?.status !== 'published' && course.status === 'published')//unpublished
-    // )
-    //     revalidatePath("/courses", "layout");
-
     revalidatePath("/", "layout");
-
-    return ApiResponse(result.data, 200, "Course created successfully");
+    return ApiResponse(result.data, 200, "Course updated successfully");
 }
 
 export async function freeCoursePurchaseAction(courseId: string) {
-    const { user } = await getAuth();
-    if (!user)
-        return ApiResponses.unauthorized("You must be logged in to purchase a course");
-
-    const result = await fulfillCoursePurchase(user.id, courseId);
-
-    if (result.error)
-        return ApiResponses.internalServerError();
+    const result = await fulfillCoursePurchase(courseId);
+    if (!result.success) {
+        if (result.error?.includes("Unauthorized")) {
+            return ApiResponses.unauthorized("You must be logged in to purchase a course");
+        }
+        return ApiResponses.internalServerError(result.error ?? "Unknown error");
+    }
     revalidatePath(`/`, 'layout');
-    // revalidatePath(`/courses`, 'layout');
     return ApiResponses.success(null, "Course purchased successfully");
-
-
 }

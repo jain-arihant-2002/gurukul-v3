@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { env } from "@/utils/env";
-import { fulfillCoursePurchase } from "@/lib/dal";
+import { fulfillCoursePurchaseInternal } from "@/lib/dal";
 import { revalidatePath } from "next/cache";
 
 export async function POST(req: NextRequest) {
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
         const { userId, courseId } = session.metadata;
 
-        const result = await fulfillCoursePurchase(userId, courseId);
+        const result = await fulfillCoursePurchaseInternal(userId, courseId);
 
         if (!result.success) {
             console.error("Webhook Error: DAL function failed to fulfill order.", { userId, courseId });

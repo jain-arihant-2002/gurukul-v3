@@ -1,56 +1,37 @@
-// In: app/dashboard/_actions/actions.ts
 "use server";
 
-import { getAuth } from "@/lib/auth/session";
-import { ApiResponses } from "@/utils/apiResponse";
-import { CourseCard, UserRole } from "@/utils/types";
 import { getEnrolledCoursesForUser, getAuthoredCoursesForInstructor, getUserData } from "@/lib/dal";
+import { ApiResponses } from "@/utils/apiResponse";
+import { CourseCard } from "@/utils/types";
 
 export async function getDashboardData() {
-    const { user: sessionUser, isAuthenticated } = await getAuth();
-
-    if (!isAuthenticated || !sessionUser) {
-        return ApiResponses.unauthorized("You must be logged in to view the dashboard.");
-    }
-
     try {
-        // Prepare promises
-        const userPromise = getUserData(sessionUser.id);
-
-        const enrolledCoursesPromise: Promise<CourseCard[]> = getEnrolledCoursesForUser(sessionUser.id);
-
-        const authoredCoursesPromise: Promise<CourseCard[]> =
-            sessionUser.role === UserRole.INSTRUCTOR
-                ? getAuthoredCoursesForInstructor(sessionUser.id)
-                : Promise.resolve([]);
-
-        // Fetch in parallel
-        const [userData, enrolledCourses, authoredCourses] = await Promise.all([
-            userPromise,
-            enrolledCoursesPromise,
-            authoredCoursesPromise,
-        ]);
-
-        if (!userData) {
-            return ApiResponses.notFound("User data not found.");
+        const userResult = await getUserData();
+        if (!userResult.success || !userResult.data) {
+            if (userResult.error?.includes("Unauthorized")) {
+                return ApiResponses.unauthorized("You must be logged in to view the dashboard.");
+            }
+            return ApiResponses.internalServerError(userResult.error ?? "Failed to load dashboard data.");
         }
+
+        const enrolledCoursesResult = await getEnrolledCoursesForUser();
+        const enrolledCourses: CourseCard[] = enrolledCoursesResult.success ? (enrolledCoursesResult.data ?? []) : [];
+
+        const authoredCoursesResult = await getAuthoredCoursesForInstructor();
+        const authoredCourses: CourseCard[] = authoredCoursesResult.success ? (authoredCoursesResult.data ?? []) : [];
 
         const data: any = {
             user: {
-                ...userData,
-                createdAt: userData.createdAt instanceof Date ? userData.createdAt.toISOString() : userData.createdAt,
+                ...userResult.data,
+                createdAt: userResult.data.createdAt instanceof Date ? userResult.data.createdAt.toISOString() : userResult.data.createdAt,
             },
             enrolledCourses,
+            authoredCourses,
         };
-
-        if (sessionUser.role === UserRole.INSTRUCTOR) {
-            data.authoredCourses = authoredCourses;
-        }
 
         return ApiResponses.success(data);
 
     } catch (error) {
-        console.error("Error fetching dashboard data:", error);
         return ApiResponses.internalServerError("Failed to load dashboard data.");
     }
 }
