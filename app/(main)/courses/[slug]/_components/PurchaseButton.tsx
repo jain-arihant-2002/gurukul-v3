@@ -15,10 +15,11 @@ const stripePromise = loadStripe(env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
 interface PurchaseButtonProps {
   courseId: string;
+  courseSlug: string;
   price: number;
 }
 
-export default function PurchaseButton({ courseId, price }: PurchaseButtonProps) {
+export default function PurchaseButton({ courseId, courseSlug, price }: PurchaseButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { isAuthenticated } = useAuth();
   const router = useRouter();
@@ -93,7 +94,7 @@ export default function PurchaseButton({ courseId, price }: PurchaseButtonProps)
         console.error("Free purchase failed:", result.error);
         return toast.error("An unexpected error occurred. Please try again.");
       }
-      router.push(`/courses/${courseId}/success`);
+      router.push(`/courses/${courseSlug}/success`);
       return toast.success("Course purchased successfully!");
     }
     catch (error) {

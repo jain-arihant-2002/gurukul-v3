@@ -54,5 +54,5 @@ export default function CourseActionPanel({ courseId, courseSlug, price }: Cours
         );
     }
 
-    return <PurchaseButton courseId={courseId} price={price} />;
+    return <PurchaseButton courseId={courseId} courseSlug={courseSlug} price={price} />;
 }
