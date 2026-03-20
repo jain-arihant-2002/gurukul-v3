@@ -13,7 +13,7 @@ function formatDate(dateString: string) {
 
 
 
-export default function CourseCard({ course }: { course: CourseCard; }) {
+export default function CourseCard({ course, isAuthor = false }: { course: CourseCard; isAuthor?: boolean }) {
   const getStatusBadgeVariant = (status?: CourseStatus) => {
     switch (status) {
       case 'published':
@@ -160,7 +160,13 @@ export default function CourseCard({ course }: { course: CourseCard; }) {
       </CardContent>
 
       <CardFooter className="p-4 pt-0">
-        <LoadingLinkButton href={`/courses/${course.slug}`} className="w-full group-hover:bg-primary/90 transition-colors" >View Course</LoadingLinkButton>
+        {
+          isAuthor ?
+            <LoadingLinkButton href={`/courses/${course.slug}/preview`} className="w-full group-hover:bg-primary/90 transition-colors" >View Course</LoadingLinkButton>
+            :
+            <LoadingLinkButton href={`/courses/${course.slug}`} className="w-full group-hover:bg-primary/90 transition-colors" >View Course</LoadingLinkButton>
+        }
+
       </CardFooter>
     </Card>
   );

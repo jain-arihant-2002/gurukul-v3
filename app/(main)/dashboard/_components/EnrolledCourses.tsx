@@ -7,9 +7,11 @@ import { BookOpen } from "lucide-react";
 interface EnrolledCoursesProps {
     isLoading: boolean;
     courses: CourseCardType[] | undefined;
+    heading: string;
+    isAuthor: boolean;
 }
 
-export function EnrolledCourses({ isLoading, courses }: EnrolledCoursesProps) {
+export function EnrolledCourses({ isLoading, courses, heading, isAuthor }: EnrolledCoursesProps) {
     if (isLoading) {
         return <EnrolledCoursesSkeleton />;
     }
@@ -17,7 +19,7 @@ export function EnrolledCourses({ isLoading, courses }: EnrolledCoursesProps) {
     if (!courses || courses.length === 0) {
         return (
             <div>
-                <h2 className="text-2xl font-semibold mb-4">My Courses</h2>
+                <h2 className="text-2xl font-semibold mb-4">{heading}</h2>
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-muted-foreground/30 p-12 text-center">
                     <BookOpen className="h-12 w-12 text-muted-foreground mb-4" />
                     <h3 className="text-xl font-semibold">You're Not Enrolled in Any Courses Yet</h3>
@@ -26,13 +28,13 @@ export function EnrolledCourses({ isLoading, courses }: EnrolledCoursesProps) {
             </div>
         );
     }
-    
+
     return (
         <div>
-            <h2 className="text-2xl font-semibold mb-4">My Courses ({courses.length})</h2>
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <h2 className="text-2xl font-semibold mb-4">{heading} ({courses.length})</h2>
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2 mb-4">
                 {courses.map(course => (
-                    <CourseCard key={course.id} course={course} />
+                    <CourseCard key={course.id} course={course} isAuthor={isAuthor} />
                 ))}
             </div>
         </div>

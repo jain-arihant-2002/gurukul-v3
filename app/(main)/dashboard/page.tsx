@@ -20,6 +20,7 @@ interface DashboardData {
         createdAt: string;
     };
     enrolledCourses: CourseCard[];
+    authoredCourses: CourseCard[];
 }
 
 export default function DashboardPage() {
@@ -76,12 +77,22 @@ export default function DashboardPage() {
                     />
                 </aside>
 
-                {/* Right Column: Enrolled Courses */}
+                {/* Right Column: Enrolled and authored Courses */}
                 <main className="lg:col-span-2">
                     <EnrolledCourses
                         isLoading={isLoadingData}
                         courses={dashboardData?.enrolledCourses}
+                        heading="My Enrolled Courses"
+                        isAuthor={false}
                     />
+                    {dashboardData?.authoredCourses && (
+                        <EnrolledCourses
+                            isLoading={isLoadingData}
+                            courses={dashboardData?.authoredCourses}
+                            heading="My Authored Courses"
+                            isAuthor={true}
+                        />
+                    )}
                 </main>
             </div>
         </div>
