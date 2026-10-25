@@ -12,6 +12,9 @@ export const metadata: Metadata = {
     template: '%s | Gurukul',
   },
   description: 'A LMS for the modern world',
+  verification: {
+    google: '3uy7vWdzQ-S2o9n24fdsRw01UQ3F8NytmcxudbZk9N0',
+  },
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode; }>) {
