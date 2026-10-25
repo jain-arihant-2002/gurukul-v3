@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -7,6 +8,9 @@ import { getAllActiveInstructorUsernames, getInstructorByUsername } from "@/lib/
 import { Twitter, Linkedin, Github, Globe, Users, BookOpen, Calendar } from "lucide-react";
 import EditProfileBtn from "./_component/editProfileBtn";
 import Link from "next/link";
+import { JsonLd } from "@/components/JsonLd";
+import { SITE_URL } from "@/lib/site";
+import { SITE_NAME, breadcrumbJsonLd, socialMetadata } from "@/lib/seo";
 
 export async function generateStaticParams() {
   const usernames = await getAllActiveInstructorUsernames();
@@ -14,6 +18,45 @@ export async function generateStaticParams() {
   return usernames.map(({ username }) => ({
     username,
   }));
+}
+
+function truncate(text: string, limit: number) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  return clean.length <= limit ? clean : `${clean.slice(0, limit - 1).trimEnd()}…`;
+}
+
+export async function generateMetadata(
+  { params }: { params: Promise<{ username: string }> }
+): Promise<Metadata> {
+  const { username } = await params;
+  const instructor = await getInstructorByUsername(username);
+
+  if (!instructor) {
+    return {
+      title: { absolute: `Instructor not found — ${SITE_NAME}` },
+      robots: { index: false, follow: true },
+    };
+  }
+
+  const title = `${instructor.name} — ${SITE_NAME} Instructor`;
+  const publishedCount = instructor.courses?.filter((course) => course.status === "published").length ?? 0;
+  const description = truncate(
+    `${instructor.headline ? `${instructor.headline}. ` : ""}${instructor.bio} ` +
+    `Browse ${publishedCount} ${SITE_NAME} course${publishedCount === 1 ? "" : "s"} taught by ${instructor.name}.`,
+    160
+  );
+
+  return {
+    title: { absolute: title },
+    description,
+    alternates: { canonical: `/instructors/${instructor.username}` },
+    ...socialMetadata({
+      title,
+      description,
+      path: `/instructors/${instructor.username}`,
+      type: "profile",
+    }),
+  };
 }
 
 export default async function InstructorDetailPage({ params }: { params: Promise<{ username: string }> }) {
@@ -49,6 +92,28 @@ export default async function InstructorDetailPage({ params }: { params: Promise
 
   return (
     <div className="min-h-screen bg-background">
+      <JsonLd
+        data={[
+          breadcrumbJsonLd([
+            { name: "Home", path: "/" },
+            { name: "Gurukul Instructors", path: "/instructors/page/1" },
+            { name: instructor.name, path: `/instructors/${instructor.username}` },
+          ]),
+          {
+            "@context": "https://schema.org",
+            "@type": "Person",
+            name: instructor.name,
+            alternateName: `@${instructor.username}`,
+            jobTitle: instructor.headline || `${SITE_NAME} Instructor`,
+            description: instructor.bio,
+            url: `${SITE_URL}/instructors/${instructor.username}`,
+            ...(instructor.avatarUrl ? { image: instructor.avatarUrl } : {}),
+            knowsAbout: instructor.expertise,
+            sameAs: Object.values(socialLinks),
+            worksFor: { "@type": "EducationalOrganization", name: SITE_NAME, url: SITE_URL },
+          },
+        ]}
+      />
       <div className="container mx-auto px-4 py-12 max-w-7xl">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
           {/* Left: Profile Card */}
@@ -69,7 +134,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
                       {instructor.name}
                     </h1>
                     <p className="text-muted-foreground mb-3">
-                      @{instructor.username}
+                      @{instructor.username} · {SITE_NAME} Instructor
                     </p>
 
                     {/* Headline */}
@@ -187,7 +252,7 @@ export default async function InstructorDetailPage({ params }: { params: Promise
             <div className="space-y-6">
               <div className="flex items-center gap-3">
                 <span className="w-1 h-8 bg-primary rounded-full"></span>
-                <h2 className="text-3xl font-bold">Courses by {instructor.name}</h2>
+                <h2 className="text-3xl font-bold">Gurukul Courses by {instructor.name}</h2>
               </div>
               <div className="pl-7">
                 {publishedCourses.length > 0 ? (

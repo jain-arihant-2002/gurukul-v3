@@ -14,11 +14,12 @@ export default function Hero() {
       <div className="relative z-10 max-w-2xl text-center">
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight text-foreground mb-6">
           Unlock Your Potential with{" "}
-          <span className="text-primary">Gurukul</span>
+          <span className="text-primary">Gurukul Courses</span>
         </h1>
         <p className="text-lg md:text-2xl text-muted-foreground mb-8">
-          The modern LMS platform for educators and learners. Create, share, and
-          grow your knowledge in a beautiful, collaborative environment.
+          An online learning platform for educators and learners. Browse Gurukul
+          courses and learn from expert Gurukul instructors — create, share, and grow
+          your knowledge in a beautiful, collaborative environment.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <LoadingLinkButton  href="/courses/page/1" size="lg">

@@ -1,39 +1,45 @@
-import CourseListSkeleton from "../../components/CourseListSkeleton";
-import ChooseUs from "./_component/ChooseUs";
-import Hero from "./_component/HeroSection";
+import CourseListSkeleton from "@/components/CourseListSkeleton";
 import InstructorListSkeleton from "@/components/InstructorListSkeleton";
+import { Skeleton } from "@/components/ui/skeleton";
 
+/**
+ * Route-level skeleton for the (main) group.
+ *
+ * Skeletons are placeholders, not content: no <h1>/<h2> and no marketing copy,
+ * because this markup is streamed into the initial HTML. Duplicating the real
+ * page's headings here gave crawlers a second H1 and stale, pre-edit copy.
+ * Marked aria-hidden so assistive tech skips the placeholder entirely.
+ */
 export default function Loading() {
-  // This UI is shown instantly while the data in page.tsx is being fetched.
   return (
-    <>
-      {/* 
-        Render static components immediately for a faster perceived load.
-        The user sees the top half of the page while the bottom half loads.
-      */}
-      <Hero />
-      <ChooseUs />
+    <div aria-hidden="true" aria-busy="true">
+      {/* Hero placeholder */}
+      <section className="flex flex-col items-center justify-center min-h-[70vh] px-4 py-16">
+        <div className="w-full max-w-2xl space-y-6">
+          <Skeleton className="h-12 w-4/5 mx-auto rounded-lg" />
+          <Skeleton className="h-6 w-full mx-auto" />
+          <Skeleton className="h-6 w-2/3 mx-auto" />
+          <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
+            <Skeleton className="h-11 w-36 rounded-md" />
+            <Skeleton className="h-11 w-36 rounded-md" />
+          </div>
+        </div>
+      </section>
 
-      {/* Skeleton for "Featured Courses" */}
+      {/* Featured courses placeholder */}
       <section className="w-[80%] mx-auto my-12">
-        <h2 className="text-3xl font-bold mb-8 text-center text-foreground">
-          Featured Courses
-        </h2>
+        <Skeleton className="h-9 w-72 mx-auto mb-8 rounded-md" />
         <CourseListSkeleton count={3} />
       </section>
 
-      {/* Skeleton for "Top Instructors" */}
+      {/* Top instructors placeholder */}
       <section className="py-16 bg-background">
         <div className="w-[80%] mx-auto px-4">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-foreground">
-            Top <span className="text-primary">Instructors</span>
-          </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-2xl mx-auto">
-            Learn from the best in the industry. Our instructors are experts, mentors, and passionate educators.
-          </p>
+          <Skeleton className="h-9 w-64 mx-auto mb-4 rounded-md" />
+          <Skeleton className="h-5 w-full max-w-2xl mx-auto mb-12 rounded-md" />
           <InstructorListSkeleton count={4} />
         </div>
       </section>
-    </>
+    </div>
   );
 }
